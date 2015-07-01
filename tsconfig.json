@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "watch": true,
+        "removeComments": true,
+        "out": "dist/mapi.js"
+    },
+    "files": [
+        "mapi.ts"
+    ]
+}
