@@ -3,7 +3,7 @@
         "module": "commonjs",
         "watch": true,
         "removeComments": true,
-        "out": "dist/mapi.js"
+        "outDir": "dist"
     },
     "files": [
         "mapi.ts"
