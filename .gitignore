@@ -35,3 +35,4 @@ node_modules
 # but keep the example and tsconfig
 !example_fixtures.json
 !tsconfig.json
+!package.json

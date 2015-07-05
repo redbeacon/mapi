@@ -1,0 +1,34 @@
+{
+  "name": "mapi",
+  "version": "1.0.0",
+  "description": "Simple Api Mocking",
+  "main": "mapi.js",
+  "dependencies": {
+    "colors": "^1.1.2",
+    "typescript": "^1.5.0-beta"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/redbeacon/mapi.git"
+  },
+  "keywords": [
+    "mock",
+    "api",
+    "mocks",
+    "api",
+    "json",
+    "db",
+    "endpoint",
+    "testing"
+  ],
+  "author": "Serkan Yersen <serkanyersen@gmail.com> (http://serkan.io/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/redbeacon/mapi/issues"
+  },
+  "homepage": "https://github.com/redbeacon/mapi#readme"
+}
