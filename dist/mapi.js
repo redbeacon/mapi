@@ -113,7 +113,7 @@ var Mapi = (function () {
             logMessage = endpoint.url;
         }
         else if (reqUrl === '/favicon.ico/') {
-            return this.serveStatic(ServerResponse, './favicon.ico', 'image/x-icon');
+            return this.serveStatic(ServerResponse, 'src/images/favicon.ico', 'image/x-icon');
         }
         else if (reqUrl === '/_mapi/') {
             response = JSON.stringify(Object.keys(this.map));

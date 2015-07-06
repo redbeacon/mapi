@@ -6,6 +6,6 @@
         "outDir": "dist"
     },
     "files": [
-        "mapi.ts"
+        "src/mapi.ts"
     ]
 }

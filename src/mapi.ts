@@ -199,7 +199,7 @@ class Mapi {
 
         } else if (reqUrl === '/favicon.ico/') {
             // Serve this file staticly
-            return this.serveStatic(ServerResponse, './favicon.ico', 'image/x-icon');
+            return this.serveStatic(ServerResponse, 'src/images/favicon.ico', 'image/x-icon');
         } else if (reqUrl === '/_mapi/') {
             // for this url, display all mocked API Endpoints
             response = JSON.stringify(Object.keys(this.map));
