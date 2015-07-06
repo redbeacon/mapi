@@ -6,11 +6,17 @@
 import http = require("http");
 import fs = require("fs");
 import pjson = require("pjson");
-require("colors"); // Colors updates the String object
+
+// Colors updates the String object
+require("colors");
 
 class Mapi {
     map:mapi.EndpointMap
 
+    /**
+     * Initiaizes the obeject. Takes arguments array
+     * @constructor
+     */
     constructor(args:string[]) {
         // Get args
         var dbFile = args[0];
@@ -27,9 +33,13 @@ class Mapi {
             'Mock server started'.green,
             `http://${hostname}:${port}/_mapi/`.magenta.underline
         );
+
         http.createServer(this.server.bind(this)).listen(port, hostname)
     }
 
+    /**
+     * Prints the usage information
+     */
     usage(errorMessage:string = ''): any {
         console.log(errorMessage.red);
         console.log("Usage:".green.underline);
@@ -63,7 +73,30 @@ class Mapi {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
         });
+
         ServerResponse.end(content);
+
+        return ServerResponse;
+    }
+
+    serveStatic(ServerResponse:http.ServerResponse, filename:string, mimeType:string): http.ServerResponse {
+        var stats, fileStream;
+
+        try {
+            stats = fs.lstatSync(filename); // throws if path doesn't exist
+        } catch (e) {
+            ServerResponse.writeHead(404, { 'Content-Type': 'text/plain' });
+            ServerResponse.write('404 Not Found\n');
+            ServerResponse.end();
+            return;
+        }
+
+        if (stats.isFile()) {
+            // path exists, is a file
+            ServerResponse.writeHead(200, { 'Content-Type': mimeType } );
+            fileStream = fs.createReadStream(filename);
+            fileStream.pipe(ServerResponse);
+        }
 
         return ServerResponse;
     }
@@ -164,6 +197,9 @@ class Mapi {
             status = endpoint.status;
             logMessage = endpoint.url;
 
+        } else if (reqUrl === '/favicon.ico/') {
+            // Serve this file staticly
+            return this.serveStatic(ServerResponse, './favicon.ico', 'image/x-icon');
         } else if (reqUrl === '/_mapi/') {
             // for this url, display all mocked API Endpoints
             response = JSON.stringify(Object.keys(this.map));

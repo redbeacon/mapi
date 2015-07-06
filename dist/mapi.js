@@ -50,6 +50,24 @@ var Mapi = (function () {
         ServerResponse.end(content);
         return ServerResponse;
     };
+    Mapi.prototype.serveStatic = function (ServerResponse, filename, mimeType) {
+        var stats, fileStream;
+        try {
+            stats = fs.lstatSync(filename);
+        }
+        catch (e) {
+            ServerResponse.writeHead(404, { 'Content-Type': 'text/plain' });
+            ServerResponse.write('404 Not Found\n');
+            ServerResponse.end();
+            return;
+        }
+        if (stats.isFile()) {
+            ServerResponse.writeHead(200, { 'Content-Type': mimeType });
+            fileStream = fs.createReadStream(filename);
+            fileStream.pipe(ServerResponse);
+        }
+        return ServerResponse;
+    };
     Mapi.prototype.log = function (status, url, message) {
         if (message === void 0) { message = ''; }
         console.log('- %s %s, %s', ("[ " + status + " ]")[status === 200 ? 'green' : 'red'], url.yellow, message.grey);
@@ -93,6 +111,9 @@ var Mapi = (function () {
             response = JSON.stringify(endpoint.fixture);
             status = endpoint.status;
             logMessage = endpoint.url;
+        }
+        else if (reqUrl === '/favicon.ico/') {
+            return this.serveStatic(ServerResponse, './favicon.ico', 'image/x-icon');
         }
         else if (reqUrl === '/_mapi/') {
             response = JSON.stringify(Object.keys(this.map));
