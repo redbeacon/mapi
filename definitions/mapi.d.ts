@@ -7,11 +7,11 @@ declare module mapi {
 	interface EndpointDetails {
 		[method: string]: mapi.EndpointResponse;
 	}
-	
+
 	interface EndpointMap {
 		[url: string]: mapi.EndpointDetails;
 	}
-	
+
 	interface MapSearchResult {
 		url?: string;
 		fixture?: string;

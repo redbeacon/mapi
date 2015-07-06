@@ -1,20 +1,24 @@
 ///<reference path='definitions/node.d.ts'/>
 ///<reference path='definitions/colors.d.ts'/>
 ///<reference path='definitions/mapi.d.ts'/>
+///<reference path='definitions/pjson.d.ts'/>
 var http = require("http");
 var fs = require("fs");
+var pjson = require("pjson");
 require("colors");
 var Mapi = (function () {
-    function Mapi(dbFile, port) {
-        if (port === void 0) { port = '9000'; }
+    function Mapi(args) {
+        var dbFile = args[0];
+        var port = args[1] ? Number(args[1]) : 9000;
+        var hostname = args[2] || 'localhost';
         if (dbFile) {
             this.map = JSON.parse(this.readFile(args[0]));
         }
         else {
             this.usage('Please provide a DB');
         }
-        console.log('%s %s', 'Mock server started'.green, ("http://localhost:" + port + "/_mapi/").magenta.underline);
-        http.createServer(this.server.bind(this)).listen(port);
+        console.log('%s %s', 'Mock server started'.green, ("http://" + hostname + ":" + port + "/_mapi/").magenta.underline);
+        http.createServer(this.server.bind(this)).listen(port, hostname);
     }
     Mapi.prototype.usage = function (errorMessage) {
         if (errorMessage === void 0) { errorMessage = ''; }
@@ -22,7 +26,9 @@ var Mapi = (function () {
         console.log("Usage:".green.underline);
         console.log("  mapi db.json".yellow, " # Just point a file as database".grey);
         console.log("  mapi db.json 8080".yellow, " # You can set a port as well".grey);
-        console.log("More details on github");
+        console.log("  mapi db.json 8080 127.0.0.1".yellow, " # You can set a hostname as well".grey);
+        console.log("Version: %s".green, pjson.version);
+        console.log("More details on %s".green, pjson.homepage);
         process.exit(1);
     };
     Mapi.prototype.readFile = function (fileName) {
@@ -103,5 +109,4 @@ var Mapi = (function () {
     };
     return Mapi;
 })();
-var args = process.argv.slice(2);
-new Mapi(args[0], args[1]);
+new Mapi(process.argv.slice(2));

@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+
+// Run mapi
+require('../dist/mapi.js')

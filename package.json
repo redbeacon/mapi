@@ -1,22 +1,35 @@
 {
-  "name": "mapi",
+  "name": "mockapi",
   "version": "1.0.0",
   "description": "Simple Api Mocking",
-  "main": "mapi.js",
+  "author": "The Home Depot - Techshed (http://techshed.co)",
+  "main": "dist/mapi.js",
+  "license": "MIT",
+  "homepage": "https://github.com/redbeacon/mapi#readme",
+  "preferGlobal": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "private": true,
   "dependencies": {
     "colors": "^1.1.2",
+    "pjson": "^1.0.4"
+  },
+  "devDependencies": {
     "typescript": "^1.5.0-beta"
   },
-  "devDependencies": {},
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node_modules/typescript/bin/tsc"
+  "bin": {
+    "mapi": "bin/mapi"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/redbeacon/mapi.git"
   },
+  "bugs": {
+    "url": "https://github.com/redbeacon/mapi/issues"
+  },
   "keywords": [
+    "mapi",
     "mock",
     "api",
     "mocks",
@@ -25,11 +38,5 @@
     "db",
     "endpoint",
     "testing"
-  ],
-  "author": "Serkan Yersen <serkanyersen@gmail.com> (http://serkan.io/)",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/redbeacon/mapi/issues"
-  },
-  "homepage": "https://github.com/redbeacon/mapi#readme"
+  ]
 }

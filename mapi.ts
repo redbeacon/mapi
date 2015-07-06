@@ -1,15 +1,21 @@
 ///<reference path='definitions/node.d.ts'/>
 ///<reference path='definitions/colors.d.ts'/>
 ///<reference path='definitions/mapi.d.ts'/>
+///<reference path='definitions/pjson.d.ts'/>
 
 import http = require("http");
 import fs = require("fs");
+import pjson = require("pjson");
 require("colors"); // Colors updates the String object
 
 class Mapi {
     map:mapi.EndpointMap
 
-    constructor(dbFile:string, port:string = '9000') {
+    constructor(args:string[]) {
+        // Get args
+        var dbFile = args[0];
+        var port = args[1]? Number(args[1]) : 9000;
+        var hostname = args[2] || 'localhost';
 
         if (dbFile) {
             this.map = JSON.parse(this.readFile(args[0]));
@@ -19,9 +25,9 @@ class Mapi {
 
         console.log('%s %s',
             'Mock server started'.green,
-            `http://localhost:${port}/_mapi/`.magenta.underline
+            `http://${hostname}:${port}/_mapi/`.magenta.underline
         );
-        http.createServer(this.server.bind(this)).listen(port)
+        http.createServer(this.server.bind(this)).listen(port, hostname)
     }
 
     usage(errorMessage:string = ''): any {
@@ -29,7 +35,9 @@ class Mapi {
         console.log("Usage:".green.underline);
         console.log("  mapi db.json".yellow, " # Just point a file as database".grey);
         console.log("  mapi db.json 8080".yellow, " # You can set a port as well".grey);
-        console.log("More details on github");
+        console.log("  mapi db.json 8080 127.0.0.1".yellow, " # You can set a hostname as well".grey);
+        console.log("Version: %s".green, pjson.version);
+        console.log("More details on %s".green, pjson.homepage);
         process.exit(1);
     }
 
@@ -173,8 +181,5 @@ class Mapi {
     }
 }
 
-// Get arguments
-var args = process.argv.slice(2);
-
 // Initialize System
-new Mapi(args[0], args[1]);
+new Mapi(process.argv.slice(2));
