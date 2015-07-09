@@ -14,7 +14,6 @@ class Mapi {
     map:mapi.EndpointMap
 
     /**
-     * Initiaizes the obeject. Takes arguments array
      * @constructor
      */
     constructor(args:string[]) {
