@@ -7,4 +7,4 @@ tsc src/mapi.spec.ts --module commonjs
 ./node_modules/jasmine-node/bin/jasmine-node src/mapi.spec.js
 
 # Clean the test file
-rm src/mapi.spec.js
+rm src/*.js
