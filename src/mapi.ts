@@ -10,7 +10,7 @@ import pjson = require("pjson");
 // Colors updates the String object
 require("colors");
 
-class Mapi {
+export class Mapi {
     map:mapi.EndpointMap
 
     /**
@@ -215,6 +215,3 @@ class Mapi {
         this.sendResponse(ServerResponse, response, status);
     }
 }
-
-// Initialize System
-new Mapi(process.argv.slice(2));

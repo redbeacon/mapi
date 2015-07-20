@@ -130,4 +130,4 @@ var Mapi = (function () {
     };
     return Mapi;
 })();
-new Mapi(process.argv.slice(2));
+exports.Mapi = Mapi;
