@@ -26,6 +26,7 @@ export class Mapi {
             this.map = JSON.parse(this.readFile(args[0]));
         } else {
             this.usage('Please provide a DB');
+            return this.exit(1);
         }
 
         console.log('%s %s',
@@ -33,6 +34,20 @@ export class Mapi {
             `http://${hostname}:${port}/_mapi/`.magenta.underline
         );
 
+        this.createServer(port, hostname);
+    }
+
+    /**
+     * Exits application with given status
+     */
+    exit(status:number): any {
+        return process.exit(status);
+    }
+
+    /**
+     * Creates a server
+     */
+    createServer(port:number, hostname:string) {
         http.createServer(this.server.bind(this)).listen(port, hostname)
     }
 
@@ -47,7 +62,6 @@ export class Mapi {
         console.log("  mapi db.json 8080 127.0.0.1".yellow, " # You can set a hostname as well".grey);
         console.log("Version: %s".green, pjson.version);
         console.log("More details on %s".green, pjson.homepage);
-        process.exit(1);
     }
 
     /**
@@ -59,6 +73,7 @@ export class Mapi {
             file = fs.readFileSync(fileName, { encoding: 'utf-8' });
         } catch (e) {
             this.usage(`Could not read ${fileName}`);
+            return this.exit(1);
         }
         return file;
     }

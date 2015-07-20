@@ -34,6 +34,7 @@ node_modules
 
 # don't commit temporary compiled spec files
 *.spec.js
+src/mapi.js
 
 # but keep the example and tsconfig
 !example_fixtures.json
