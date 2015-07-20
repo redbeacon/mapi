@@ -32,6 +32,9 @@ node_modules
 # never commit any personal DBs
 *.json
 
+# don't commit temporary compiled spec files
+*.spec.js
+
 # but keep the example and tsconfig
 !example_fixtures.json
 !tsconfig.json
