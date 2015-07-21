@@ -15,10 +15,10 @@
 ///<reference path='definitions/colors.d.ts'/>
 ///<reference path='definitions/mapi.d.ts'/>
 ///<reference path='definitions/pjson.d.ts'/>
+require("colors");
 var http = require("http");
 var fs = require("fs");
 var pjson = require("pjson");
-require("colors");
 var Mapi = (function () {
     function Mapi(args) {
         var dbFile = args[0];

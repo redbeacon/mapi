@@ -17,12 +17,10 @@
 ///<reference path='definitions/mapi.d.ts'/>
 ///<reference path='definitions/pjson.d.ts'/>
 
+import "colors";
 import http = require("http");
 import fs = require("fs");
 import pjson = require("pjson");
-
-// Colors updates the String object
-require("colors");
 
 export class Mapi {
     map:mapi.EndpointMap

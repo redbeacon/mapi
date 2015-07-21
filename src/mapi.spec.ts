@@ -1,8 +1,7 @@
 ///<reference path='definitions/node.d.ts'/>
 ///<reference path='definitions/colors.d.ts'/>
 ///<reference path='definitions/jasmine.d.ts'/>
-require('colors');
-
+import 'colors';
 import {Mapi} from './mapi';
 
 describe('Test Mapi', () => {
@@ -25,39 +24,39 @@ describe('Test Mapi', () => {
 		});
 
 		it('should fail when there are no files given', () => {
-			var a = new Mapi([]);
-			expect(a.usage).toHaveBeenCalledWith('Please provide a DB');
-			expect(a.exit).toHaveBeenCalledWith(1);
-			expect(a.readFile).not.toHaveBeenCalled();
-			expect(a.createServer).not.toHaveBeenCalled();
+			var mapi = new Mapi([]);
+			expect(mapi.usage).toHaveBeenCalledWith('Please provide a DB');
+			expect(mapi.exit).toHaveBeenCalledWith(1);
+			expect(mapi.readFile).not.toHaveBeenCalled();
+			expect(mapi.createServer).not.toHaveBeenCalled();
 		});
 
 		it('should init with defaults', () => {
-			var a = new Mapi(['testfile.json']);
-			expect(a.readFile).toHaveBeenCalledWith('testfile.json');
-			expect(a.createServer).toHaveBeenCalledWith(9000, 'localhost');
+			var mapi = new Mapi(['testfile.json']);
+			expect(mapi.readFile).toHaveBeenCalledWith('testfile.json');
+			expect(mapi.createServer).toHaveBeenCalledWith(9000, 'localhost');
 			expect(console.log).toHaveBeenCalledWith('%s %s', 'Mock server started'.green,
 															  'http://localhost:9000/_mapi/'.magenta.underline);
 		});
 
 		it('should init with given values', () => {
-			var a = new Mapi(['testfile.json', '8080', '0.0.0.0']);
-			expect(a.readFile).toHaveBeenCalledWith('testfile.json');
-			expect(a.createServer).toHaveBeenCalledWith(8080, '0.0.0.0');
+			var mapi = new Mapi(['testfile.json', '8080', '0.0.0.0']);
+			expect(mapi.readFile).toHaveBeenCalledWith('testfile.json');
+			expect(mapi.createServer).toHaveBeenCalledWith(8080, '0.0.0.0');
 			expect(console.log).toHaveBeenCalledWith('%s %s', 'Mock server started'.green,
 															  'http://0.0.0.0:8080/_mapi/'.magenta.underline);
 		});
 
 		it('should init if only port is given', () => {
-			var a = new Mapi(['testfile.json', '8080']);
-			expect(a.readFile).toHaveBeenCalledWith('testfile.json');
-			expect(a.createServer).toHaveBeenCalledWith(8080, 'localhost');
+			var mapi = new Mapi(['testfile.json', '8080']);
+			expect(mapi.readFile).toHaveBeenCalledWith('testfile.json');
+			expect(mapi.createServer).toHaveBeenCalledWith(8080, 'localhost');
 			expect(console.log).toHaveBeenCalledWith('%s %s', 'Mock server started'.green,
 															  'http://localhost:8080/_mapi/'.magenta.underline);
 		});
 	});
 
-	describe('usage method', ()=>{
+	describe('readFile method', ()=>{
 		it('should read the given file', ()=>{
 			var result = Mapi.prototype.readFile('./example_fixtures.json');
 			// suffician enought JSON content
