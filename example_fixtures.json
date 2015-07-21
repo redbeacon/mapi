@@ -1,18 +1,17 @@
 {
+
   "/api/v1/test": {
     "GET": {
       "response": {
         "success": true,
         "mode": "GET"
-      },
-      "status": 200
+      }
     },
     "POST": {
       "response": {
         "success": true,
         "mode": "POST"
-      },
-      "status": 200
+      }
     },
     "PUT": {
       "response": {
@@ -23,11 +22,13 @@
       "status": 500
     }
   },
+
   "/api/v1/test2": {
     "GET": {
-      "response": ""
+      "response": "String response"
     }
   },
+
   "/api/*/hello": {
     "GET": {
       "response": {
@@ -43,17 +44,13 @@
       }
     }
   },
+
   "/api/v1/users": {
     "GET": {
       "response": [
-        {"user": "serkan", "id": 1},
-        {"user": "renan", "id": 2}
+        { "user": "serkan", "id": 1 },
+        { "user": "renan", "id": 2 }
       ]
-    }
-  },
-  "/api/v1/user/1": {
-    "GET": {
-      "response": "/api/v1/users.GET.0"
     }
   }
 }
