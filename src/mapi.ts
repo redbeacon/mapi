@@ -132,7 +132,7 @@ export class Mapi {
      */
     log(status:number, url:string, message:string = ''): string {
         console.log('- %s %s, %s',
-                	// Pick color for the status code
+                    // Pick color for the status code
                     (`[ ${status} ]`)[status === 200 ? 'green' : 'red'],
                     url.yellow,
                     message.grey);
