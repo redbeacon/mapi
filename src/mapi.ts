@@ -114,7 +114,7 @@ export class Mapi {
             ServerResponse.writeHead(404, { 'Content-Type': 'text/plain' });
             ServerResponse.write('404 Not Found\n');
             ServerResponse.end();
-            return;
+            return ServerResponse;
         }
 
         if (stats.isFile()) {
@@ -164,7 +164,7 @@ export class Mapi {
                 // try to match them to URL provided.
                 urls.forEach((endpoint) => {
 
-                    // We have only one wild card
+                    // We have only one wild card character
                     if (endpoint.indexOf('*') !== -1) {
 
                         // First sanitize all possible REGEXP signs

@@ -79,7 +79,7 @@ var Mapi = (function () {
             ServerResponse.writeHead(404, { 'Content-Type': 'text/plain' });
             ServerResponse.write('404 Not Found\n');
             ServerResponse.end();
-            return;
+            return ServerResponse;
         }
         if (stats.isFile()) {
             ServerResponse.writeHead(200, { 'Content-Type': mimeType });

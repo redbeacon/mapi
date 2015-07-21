@@ -143,4 +143,54 @@ describe('Test Mapi', () => {
       expect(console.log).toHaveBeenCalledWith('- %s %s, %s', '[ 200 ]'.green, '/abc'.yellow, ''.grey);
     })
   })
+
+  describe('serveStatic method', ()=>{
+    beforeEach(() => {
+      // mock http.ServerResponse object
+      // mock fs module somehow
+    })
+
+    // provide real file
+    it('should call serverResponse.writeHead with correct values', () => {
+      // check if serverResponse.writeHead was called with [200, { 'Content-Type': mimeType }]
+      // check if fs module methods call with correct values
+    })
+
+    // provide non existant file
+    it('should call serverResponse with 404 headers', () => {
+      // check if serverResponse.writeHead was called with [404, { 'Content-Type': 'text/plain' }]
+      // check if serverResponse.write was called with ['404 Not Found\n']
+      // check if serverResponse.end was called
+    })
+  })
+
+  describe('sendResponse method', () => {
+    beforeEach(() => {
+      // mock http.ServerResponse object
+    })
+
+    it('should call serverResponse functions correctly', () => {
+      // check if http.ServerResponse.writeHead was called with correct status and headers
+      // check if http.ServerResponse.end was called with content
+    })
+
+    it('should apply corrrect status code', () => {
+      // send different status code, check if it was applied to header
+    })
+  })
+
+  describe('searchMap', () => {
+    // Create fixture files for each possible scenario
+    // initiate Mapi with respective fixture for each test
+    // - test if normal url is found
+    // - test if same url without trailing slash or vice versa is found
+    // - test if no status code was defined default should be 200
+    // - test if it can get the response for given METHOD
+    // - test if urls with wild cards are matched
+    // - test what happens when given url or method is not found
+    // - test fixtures with really messy urls
+    // - test wildcard urls are correctly sanitized
+    // - test wild card is allowed any place in string
+    // - test multiple wildcards are handled properly
+  })
 })
