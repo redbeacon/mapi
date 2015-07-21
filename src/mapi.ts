@@ -1,3 +1,17 @@
+// Copyright 2015 The Home Depot
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 ///<reference path='definitions/node.d.ts'/>
 ///<reference path='definitions/colors.d.ts'/>
 ///<reference path='definitions/mapi.d.ts'/>
@@ -10,7 +24,7 @@ import pjson = require("pjson");
 // Colors updates the String object
 require("colors");
 
-class Mapi {
+export class Mapi {
     map:mapi.EndpointMap
 
     /**
@@ -26,6 +40,7 @@ class Mapi {
             this.map = JSON.parse(this.readFile(args[0]));
         } else {
             this.usage('Please provide a DB');
+            return this.exit(1);
         }
 
         console.log('%s %s',
@@ -33,6 +48,20 @@ class Mapi {
             `http://${hostname}:${port}/_mapi/`.magenta.underline
         );
 
+        this.createServer(port, hostname);
+    }
+
+    /**
+     * Exits application with given status
+     */
+    exit(status:number): any {
+        return process.exit(status);
+    }
+
+    /**
+     * Creates a server
+     */
+    createServer(port:number, hostname:string) {
         http.createServer(this.server.bind(this)).listen(port, hostname)
     }
 
@@ -47,7 +76,6 @@ class Mapi {
         console.log("  mapi db.json 8080 127.0.0.1".yellow, " # You can set a hostname as well".grey);
         console.log("Version: %s".green, pjson.version);
         console.log("More details on %s".green, pjson.homepage);
-        process.exit(1);
     }
 
     /**
@@ -59,6 +87,7 @@ class Mapi {
             file = fs.readFileSync(fileName, { encoding: 'utf-8' });
         } catch (e) {
             this.usage(`Could not read ${fileName}`);
+            return this.exit(1);
         }
         return file;
     }
@@ -215,6 +244,3 @@ class Mapi {
         this.sendResponse(ServerResponse, response, status);
     }
 }
-
-// Initialize System
-new Mapi(process.argv.slice(2));

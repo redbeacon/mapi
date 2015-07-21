@@ -1,3 +1,16 @@
+// Copyright 2015 The Home Depot
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 ///<reference path='definitions/node.d.ts'/>
 ///<reference path='definitions/colors.d.ts'/>
 ///<reference path='definitions/mapi.d.ts'/>
@@ -16,10 +29,17 @@ var Mapi = (function () {
         }
         else {
             this.usage('Please provide a DB');
+            return this.exit(1);
         }
         console.log('%s %s', 'Mock server started'.green, ("http://" + hostname + ":" + port + "/_mapi/").magenta.underline);
-        http.createServer(this.server.bind(this)).listen(port, hostname);
+        this.createServer(port, hostname);
     }
+    Mapi.prototype.exit = function (status) {
+        return process.exit(status);
+    };
+    Mapi.prototype.createServer = function (port, hostname) {
+        http.createServer(this.server.bind(this)).listen(port, hostname);
+    };
     Mapi.prototype.usage = function (errorMessage) {
         if (errorMessage === void 0) { errorMessage = ''; }
         console.log(errorMessage.red);
@@ -29,7 +49,6 @@ var Mapi = (function () {
         console.log("  mapi db.json 8080 127.0.0.1".yellow, " # You can set a hostname as well".grey);
         console.log("Version: %s".green, pjson.version);
         console.log("More details on %s".green, pjson.homepage);
-        process.exit(1);
     };
     Mapi.prototype.readFile = function (fileName) {
         var file;
@@ -38,6 +57,7 @@ var Mapi = (function () {
         }
         catch (e) {
             this.usage("Could not read " + fileName);
+            return this.exit(1);
         }
         return file;
     };
@@ -130,4 +150,4 @@ var Mapi = (function () {
     };
     return Mapi;
 })();
-new Mapi(process.argv.slice(2));
+exports.Mapi = Mapi;
