@@ -15,9 +15,11 @@
 ///<reference path='definitions/colors.d.ts'/>
 ///<reference path='definitions/mapi.d.ts'/>
 ///<reference path='definitions/pjson.d.ts'/>
+///<reference path='definitions/jsonplus.d.ts'/>
 var http = require("http");
 var fs = require("fs");
 var pjson = require("pjson");
+var jsonplus_1 = require("jsonplus");
 require("colors");
 var Mapi = (function () {
     function Mapi(args) {
@@ -25,7 +27,7 @@ var Mapi = (function () {
         var port = args[1] ? Number(args[1]) : 9000;
         var hostname = args[2] || 'localhost';
         if (dbFile) {
-            this.map = JSON.parse(this.readFile(args[0]));
+            this.map = jsonplus_1.parse(this.readFile(args[0]));
         }
         else {
             this.usage('Please provide a DB');

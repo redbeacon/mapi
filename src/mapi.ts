@@ -16,10 +16,12 @@
 ///<reference path='definitions/colors.d.ts'/>
 ///<reference path='definitions/mapi.d.ts'/>
 ///<reference path='definitions/pjson.d.ts'/>
+///<reference path='definitions/jsonplus.d.ts'/>
 
 import http = require("http");
 import fs = require("fs");
 import pjson = require("pjson");
+import {parse} from "jsonplus";
 
 // Colors updates the String object
 require("colors");
@@ -37,7 +39,7 @@ export class Mapi {
         var hostname = args[2] || 'localhost';
 
         if (dbFile) {
-            this.map = JSON.parse(this.readFile(args[0]));
+            this.map = parse(this.readFile(args[0]));
         } else {
             this.usage('Please provide a DB');
             return this.exit(1);
