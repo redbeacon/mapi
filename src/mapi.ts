@@ -81,7 +81,7 @@ export class Mapi {
     }
 
     /**
-     * Reads the gicen file and returns it as a string
+     * Reads the given file and returns it as a string
      */
     readFile(fileName:string): string {
         var file;
@@ -144,7 +144,7 @@ export class Mapi {
     }
 
     /**
-     * Searches request URL in the enpoint map with given method. Returns information found.
+     * Searches request URL in the endpoint map with given method. Returns information found.
      */
     searchMap(url:string, method:string = 'GET'): mapi.MapSearchResult {
         var entry,
@@ -214,7 +214,7 @@ export class Mapi {
             logMessage: string,
             endpoint: mapi.MapSearchResult,
             // Add trailing slash no matter what
-            // replace /mapi with /api so that you can define your enpoints as /api but still
+            // replace /mapi with /api so that you can define your endpoints as /api but still
             // use them as /mapi. By this way you can have real api and mock api at the same time
             reqUrl:string = (ServerRequest.url + '/').replace(/\/+/g, '/').replace('/mapi', '/api');
 
@@ -228,7 +228,7 @@ export class Mapi {
             logMessage = endpoint.url;
 
         } else if (reqUrl === '/favicon.ico/') {
-            // Serve this file staticly
+            // Serve this file statically
             return this.serveStatic(ServerResponse, 'src/images/favicon.ico', 'image/x-icon');
         } else if (reqUrl === '/_mapi/') {
             // for this url, display all mocked API Endpoints

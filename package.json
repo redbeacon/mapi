@@ -13,11 +13,11 @@
   "private": true,
   "dependencies": {
     "colors": "^1.1.2",
-    "pjson": "^1.0.5"
+    "pjson": "^1.0.x",
+    "jsonplus": "^1.2.x"
   },
   "devDependencies": {
     "jasmine-node": "^1.14.5",
-    "jsonplus": "^1.2.0",
     "typescript": "^1.5.0-beta"
   },
   "bin": {
