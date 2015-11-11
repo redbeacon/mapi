@@ -16,16 +16,16 @@ import http = require("http");
 import fs = require("fs");
 import pjson = require("pjson");
 import {parse} from "jsonplus";
-
 // Colors updates the String object
-require("colors");
+import "colors";
+
 
 export class Mapi {
     map: mapi.EndpointMap;
 
     constructor(args:string[]) {
         // Get args
-        var dbFile = args[0],
+        let dbFile = args[0],
             port = args[1]? Number(args[1]) : 9000,
             hostname = args[2] || "localhost";
 
@@ -54,14 +54,14 @@ export class Mapi {
     /**
      * Creates a server
      */
-    createServer(port:number, hostname:string) {
+    createServer(port:number, hostname:string): void {
         http.createServer(this.server.bind(this)).listen(port, hostname);
     }
 
     /**
      * Prints the usage information
      */
-    usage(errorMessage:string = ""): any {
+    usage(errorMessage:string = ""): void {
         console.log(errorMessage.red);
         console.log("Usage:".green.underline);
         console.log("  mapi db.json".yellow, " # Just point a file as database".grey);
@@ -75,7 +75,7 @@ export class Mapi {
      * Reads the given file and returns it as a string
      */
     readFile(fileName:string): string {
-        var file;
+        let file;
         try {
             file = fs.readFileSync(fileName, { encoding: "utf-8" });
         } catch (e) {
@@ -101,7 +101,8 @@ export class Mapi {
     }
 
     serveStatic(ServerResponse:http.ServerResponse, filename:string, mimeType:string): http.ServerResponse {
-        var stats, fileStream;
+        let stats: fs.Stats,
+            fileStream: fs.ReadStream;
 
         try {
             stats = fs.lstatSync(filename); // throws if path doesn't exist
@@ -138,10 +139,8 @@ export class Mapi {
      * Searches request URL in the endpoint map with given method. Returns information found.
      */
     searchMap(url:string, method:string = "GET"): mapi.MapSearchResult {
-        var entry:mapi.EndpointDetails,
-            rgx:RegExp,
+        let entry:mapi.EndpointDetails,
             found = false,
-            sanitized:string,
             urls:string[];
 
         // If url is not in the map
@@ -157,16 +156,16 @@ export class Mapi {
 
                 // Going through all endpoints, create a regexp from wildcards and
                 // try to match them to URL provided.
-                urls.forEach((endpoint) => {
+                urls.forEach(endpoint => {
 
                     // We have only one wild card
                     if (endpoint.indexOf("*") !== -1) {
 
                         // First sanitize all possible REGEXP signs
-                        sanitized = endpoint.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+                        let sanitized = endpoint.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
 
                         // Then find sanitized * and replace it with URL ready wildcard
-                        rgx = new RegExp(sanitized.replace(/\\\*/g, "([^\\/]*?)"), "gim");
+                        let rgx = new RegExp(sanitized.replace(/\\\*/g, "([^\\/]*?)"), "gim");
 
                         // Try url with regexp, make sure to test
                         // with trailing slash as well.
@@ -199,8 +198,8 @@ export class Mapi {
     /**
      * Handles the requests and sends response back accordingly.
      */
-    server(ServerRequest:http.ServerRequest, ServerResponse:http.ServerResponse) {
-        var response: string,
+    server(ServerRequest:http.ServerRequest, ServerResponse:http.ServerResponse): http.ServerResponse|void {
+        let response: string,
             status: number,
             logMessage: string,
             endpoint: mapi.MapSearchResult,
