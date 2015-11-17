@@ -19,14 +19,13 @@ import {parse} from "jsonplus";
 // Colors updates the String object
 import "colors";
 
-
 export class Mapi {
     map: mapi.EndpointMap;
 
-    constructor(args:string[]) {
+    constructor(args: string[]) {
         // Get args
         let dbFile = args[0],
-            port = args[1]? Number(args[1]) : 9000,
+            port = args[1] ? Number(args[1]) : 9000,
             hostname = args[2] || "localhost";
 
         if (dbFile) {
@@ -47,21 +46,21 @@ export class Mapi {
     /**
      * Exits application with given status
      */
-    exit(status:number): any {
+    exit(status: number): any {
         return process.exit(status);
     }
 
     /**
      * Creates a server
      */
-    createServer(port:number, hostname:string): void {
+    createServer(port: number, hostname: string): void {
         http.createServer(this.server.bind(this)).listen(port, hostname);
     }
 
     /**
      * Prints the usage information
      */
-    usage(errorMessage:string = ""): void {
+    usage(errorMessage: string = ""): void {
         console.log(errorMessage.red);
         console.log("Usage:".green.underline);
         console.log("  mapi db.json".yellow, " # Just point a file as database".grey);
@@ -74,7 +73,7 @@ export class Mapi {
     /**
      * Reads the given file and returns it as a string
      */
-    readFile(fileName:string): string {
+    readFile(fileName: string): string {
         let file;
         try {
             file = fs.readFileSync(fileName, { encoding: "utf-8" });
@@ -88,7 +87,7 @@ export class Mapi {
     /**
      * Send a response to the request with given content and status code
      */
-    sendResponse(ServerResponse:http.ServerResponse, content:string, status:number = 200): http.ServerResponse {
+    sendResponse(ServerResponse: http.ServerResponse, content: string, status: number = 200): http.ServerResponse {
 
         ServerResponse.writeHead(status, {
             "Content-Type": "application/json",
@@ -100,7 +99,7 @@ export class Mapi {
         return ServerResponse;
     }
 
-    serveStatic(ServerResponse:http.ServerResponse, filename:string, mimeType:string): http.ServerResponse {
+    serveStatic(ServerResponse: http.ServerResponse, filename: string, mimeType: string): http.ServerResponse {
         let stats: fs.Stats,
             fileStream: fs.ReadStream;
 
@@ -110,12 +109,12 @@ export class Mapi {
             ServerResponse.writeHead(404, { "Content-Type": "text/plain" });
             ServerResponse.write("404 Not Found\n");
             ServerResponse.end();
-            return;
+            return ServerResponse;
         }
 
         if (stats.isFile()) {
             // path exists, is a file
-            ServerResponse.writeHead(200, { "Content-Type": mimeType } );
+            ServerResponse.writeHead(200, { "Content-Type": mimeType });
             fileStream = fs.createReadStream(filename);
             fileStream.pipe(ServerResponse);
         }
@@ -126,22 +125,22 @@ export class Mapi {
     /**
      * Writes an entry to server logs
      */
-    log(status:number, url:string, message:string = ""): string {
+    log(status: number, url: string, message: string = ""): string {
         console.log("- %s %s, %s",
-                    // Pick color for the status code
-                    (`[ ${status} ]`)[status === 200 ? "green" : "red"],
-                    url.yellow,
-                    message.grey);
+            // Pick color for the status code
+            (`[ ${status} ]`)[status === 200 ? "green" : "red"],
+            url.yellow,
+            message.grey);
         return message;
     }
 
     /**
      * Searches request URL in the endpoint map with given method. Returns information found.
      */
-    searchMap(url:string, method:string = "GET"): mapi.MapSearchResult {
-        let entry:mapi.EndpointDetails,
+    searchMap(url: string, method: string = "GET"): mapi.MapSearchResult {
+        let entry: mapi.EndpointDetails,
             found = false,
-            urls:string[];
+            urls: string[];
 
         // If url is not in the map
         if (!this.map[url]) {
@@ -157,7 +156,6 @@ export class Mapi {
                 // Going through all endpoints, create a regexp from wildcards and
                 // try to match them to URL provided.
                 urls.forEach(endpoint => {
-
                     // We have only one wild card
                     if (endpoint.indexOf("*") !== -1) {
 
@@ -198,7 +196,7 @@ export class Mapi {
     /**
      * Handles the requests and sends response back accordingly.
      */
-    server(ServerRequest:http.ServerRequest, ServerResponse:http.ServerResponse): http.ServerResponse|void {
+    server(ServerRequest: http.ServerRequest, ServerResponse: http.ServerResponse): http.ServerResponse | void {
         let response: string,
             status: number,
             logMessage: string,
