@@ -230,7 +230,7 @@ declare module "http" {
 
     export class Server extends events.EventEmitter {
         listen(port: number, hostname?: string, backlog?: number, callback?: Function): void;
-		listen(port: number, hostname?: number, callback?: Function): void;
+        listen(port: number, hostname?: number, callback?: Function): void;
         listen(path: string, callback?: Function): void;
         listen(handle: any, listeningListener?: Function): void;
         close(cb?: any): void;
@@ -321,7 +321,7 @@ declare module "cluster" {
     export function disconnect(callback?: Function): void;
     export var workers: any;
 
-    // Event emitter    
+    // Event emitter
     export function addListener(event: string, listener: Function): void;
     export function on(event: string, listener: Function): any;
     export function once(event: string, listener: Function): void;
@@ -948,8 +948,8 @@ declare module "crypto" {
         final(): NodeBuffer;
         setAutoPadding(auto_padding: boolean): void;
     }
-	export function createDecipher(algorithm: string, password: any): Decipher;
-	export function createDecipheriv(algorithm: string, key: any, iv: any): Decipher;
+    export function createDecipher(algorithm: string, password: any): Decipher;
+    export function createDecipheriv(algorithm: string, key: any, iv: any): Decipher;
     export interface Decipher {
         update(data: any, input_encoding: string, output_encoding: string): string;
         update(data: any, input_encoding?: string): NodeBuffer;
