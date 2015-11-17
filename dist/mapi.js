@@ -90,15 +90,15 @@ var Mapi = (function () {
     };
     Mapi.prototype.searchMap = function (url, method) {
         if (method === void 0) { method = "GET"; }
-        var entry, rgx, found = false, sanitized, urls;
+        var entry, found = false, urls;
         if (!this.map[url]) {
             url = url.replace(/\/$/, "");
             if (!this.map[url]) {
                 urls = Object.keys(this.map);
                 urls.forEach(function (endpoint) {
                     if (endpoint.indexOf("*") !== -1) {
-                        sanitized = endpoint.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
-                        rgx = new RegExp(sanitized.replace(/\\\*/g, "([^\\/]*?)"), "gim");
+                        var sanitized = endpoint.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+                        var rgx = new RegExp(sanitized.replace(/\\\*/g, "([^\\/]*?)"), "gim");
                         if (rgx.test(url) || rgx.test(url + "/")) {
                             url = endpoint;
                             found = true;
