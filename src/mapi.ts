@@ -12,37 +12,31 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-///<reference path='definitions/node.d.ts'/>
-///<reference path='definitions/colors.d.ts'/>
-///<reference path='definitions/mapi.d.ts'/>
-///<reference path='definitions/pjson.d.ts'/>
-
-import "colors";
 import http = require("http");
 import fs = require("fs");
 import pjson = require("pjson");
+import {parse} from "jsonplus";
+// Colors updates the String object
+import "colors";
 
 export class Mapi {
-    map:mapi.EndpointMap
+    map: mapi.EndpointMap;
 
-    /**
-     * @constructor
-     */
     constructor(args:string[]) {
         // Get args
-        var dbFile = args[0];
-        var port = args[1]? Number(args[1]) : 9000;
-        var hostname = args[2] || 'localhost';
+        let dbFile = args[0],
+            port = args[1]? Number(args[1]) : 9000,
+            hostname = args[2] || "localhost";
 
         if (dbFile) {
-            this.map = JSON.parse(this.readFile(args[0]));
+            this.map = parse(this.readFile(args[0]));
         } else {
-            this.usage('Please provide a DB');
+            this.usage("Please provide a DB");
             return this.exit(1);
         }
 
-        console.log('%s %s',
-            'Mock server started'.green,
+        console.log("%s %s",
+            "Mock server started".green,
             `http://${hostname}:${port}/_mapi/`.magenta.underline
         );
 
@@ -59,14 +53,14 @@ export class Mapi {
     /**
      * Creates a server
      */
-    createServer(port:number, hostname:string) {
-        http.createServer(this.server.bind(this)).listen(port, hostname)
+    createServer(port:number, hostname:string): void {
+        http.createServer(this.server.bind(this)).listen(port, hostname);
     }
 
     /**
      * Prints the usage information
      */
-    usage(errorMessage:string = ''): any {
+    usage(errorMessage:string = ""): void {
         console.log(errorMessage.red);
         console.log("Usage:".green.underline);
         console.log("  mapi db.json".yellow, " # Just point a file as database".grey);
@@ -77,12 +71,12 @@ export class Mapi {
     }
 
     /**
-     * Reads the gicen file and returns it as a string
+     * Reads the given file and returns it as a string
      */
     readFile(fileName:string): string {
-        var file;
+        let file;
         try {
-            file = fs.readFileSync(fileName, { encoding: 'utf-8' });
+            file = fs.readFileSync(fileName, { encoding: "utf-8" });
         } catch (e) {
             this.usage(`Could not read ${fileName}`);
             return this.exit(1);
@@ -96,8 +90,8 @@ export class Mapi {
     sendResponse(ServerResponse:http.ServerResponse, content:string, status:number = 200): http.ServerResponse {
 
         ServerResponse.writeHead(status, {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*"
         });
 
         ServerResponse.end(content);
@@ -106,20 +100,21 @@ export class Mapi {
     }
 
     serveStatic(ServerResponse:http.ServerResponse, filename:string, mimeType:string): http.ServerResponse {
-        var stats, fileStream;
+        let stats: fs.Stats,
+            fileStream: fs.ReadStream;
 
         try {
             stats = fs.lstatSync(filename); // throws if path doesn't exist
         } catch (e) {
-            ServerResponse.writeHead(404, { 'Content-Type': 'text/plain' });
-            ServerResponse.write('404 Not Found\n');
+            ServerResponse.writeHead(404, { "Content-Type": "text/plain" });
+            ServerResponse.write("404 Not Found\n");
             ServerResponse.end();
             return ServerResponse;
         }
 
         if (stats.isFile()) {
             // path exists, is a file
-            ServerResponse.writeHead(200, { 'Content-Type': mimeType } );
+            ServerResponse.writeHead(200, { "Content-Type": mimeType } );
             fileStream = fs.createReadStream(filename);
             fileStream.pipe(ServerResponse);
         }
@@ -130,29 +125,27 @@ export class Mapi {
     /**
      * Writes an entry to server logs
      */
-    log(status:number, url:string, message:string = ''): string {
-        console.log('- %s %s, %s',
+    log(status:number, url:string, message:string = ""): string {
+        console.log("- %s %s, %s",
                     // Pick color for the status code
-                    (`[ ${status} ]`)[status === 200 ? 'green' : 'red'],
+                    (`[ ${status} ]`)[status === 200 ? "green" : "red"],
                     url.yellow,
                     message.grey);
         return message;
     }
 
     /**
-     * Searches request URL in the enpoint map with given method. Returns information found.
+     * Searches request URL in the endpoint map with given method. Returns information found.
      */
-    searchMap(url:string, method:string = 'GET'): mapi.MapSearchResult {
-        var entry,
-            rgx:RegExp,
+    searchMap(url:string, method:string = "GET"): mapi.MapSearchResult {
+        let entry:mapi.EndpointDetails,
             found = false,
-            sanitized:string,
-            urls:Array<string>;
+            urls:string[];
 
         // If url is not in the map
         if (!this.map[url]) {
             // then remove the slash
-            url = url.replace(/\/$/, '');
+            url = url.replace(/\/$/, "");
 
             // If there was no direct hit, look for wildcards
             if (!this.map[url]) {
@@ -162,20 +155,19 @@ export class Mapi {
 
                 // Going through all endpoints, create a regexp from wildcards and
                 // try to match them to URL provided.
-                urls.forEach((endpoint) => {
-
-                    // We have only one wild card character
-                    if (endpoint.indexOf('*') !== -1) {
+                urls.forEach(endpoint => {
+                    // We have only one wild card
+                    if (endpoint.indexOf("*") !== -1) {
 
                         // First sanitize all possible REGEXP signs
-                        sanitized = endpoint.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+                        let sanitized = endpoint.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
 
                         // Then find sanitized * and replace it with URL ready wildcard
-                        rgx = new RegExp(sanitized.replace(/\\\*/g, '([^\\/]*?)'), 'gim');
+                        let rgx = new RegExp(sanitized.replace(/\\\*/g, "([^\\/]*?)"), "gim");
 
                         // Try url with regexp, make sure to test
                         // with trailing slash as well.
-                        if (rgx.test(url) || rgx.test(url + '/')) {
+                        if (rgx.test(url) || rgx.test(url + "/")) {
                             url = endpoint;
                             found = true;
                         }
@@ -204,15 +196,15 @@ export class Mapi {
     /**
      * Handles the requests and sends response back accordingly.
      */
-    server(ServerRequest:http.ServerRequest, ServerResponse:http.ServerResponse) {
-        var response: string,
+    server(ServerRequest:http.ServerRequest, ServerResponse:http.ServerResponse): http.ServerResponse|void {
+        let response: string,
             status: number,
             logMessage: string,
             endpoint: mapi.MapSearchResult,
             // Add trailing slash no matter what
-            // replace /mapi with /api so that you can define your enpoints as /api but still
+            // replace /mapi with /api so that you can define your endpoints as /api but still
             // use them as /mapi. By this way you can have real api and mock api at the same time
-            reqUrl:string = (ServerRequest.url + '/').replace(/\/+/g, '/').replace('/mapi', '/api');
+            reqUrl = (ServerRequest.url + "/").replace(/\/+/g, "/").replace("/mapi", "/api");
 
         endpoint = this.searchMap(reqUrl, ServerRequest.method);
 
@@ -223,19 +215,19 @@ export class Mapi {
             status = endpoint.status;
             logMessage = endpoint.url;
 
-        } else if (reqUrl === '/favicon.ico/') {
-            // Serve this file staticly
-            return this.serveStatic(ServerResponse, 'src/images/favicon.ico', 'image/x-icon');
-        } else if (reqUrl === '/_mapi/') {
+        } else if (reqUrl === "/favicon.ico/") {
+            // Serve this file statically
+            return this.serveStatic(ServerResponse, "src/images/favicon.ico", "image/x-icon");
+        } else if (reqUrl === "/_mapi/") {
             // for this url, display all mocked API Endpoints
             response = JSON.stringify(Object.keys(this.map));
             status = 200;
-            logMessage = 'show all urls';
+            logMessage = "show all urls";
         } else {
             // If URL was not found display 404 message
             response = `{ "error": "Could not find ${reqUrl}" }`;
             status = 404;
-            logMessage = 'url not mapped';
+            logMessage = "url not mapped";
         }
 
         this.log(status, reqUrl, logMessage);

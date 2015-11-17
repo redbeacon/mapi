@@ -1,34 +1,42 @@
 {
-
+  // Nice example with different methods
   "/api/v1/test": {
+    // Method here
     "GET": {
+      // This will be the response for GET
       "response": {
-        "success": true,
-        "mode": "GET"
+        "success": true, // These are just random values
+        "mode": "GET"    // This too
       }
     },
+    // POST Method yay!
     "POST": {
-      "response": {
+      "response": { // Example response again
         "success": true,
         "mode": "POST"
       }
     },
+
+    // PUT for example purposes will return error
     "PUT": {
-      "response": {
+      "response": { // Example response
         "success": false,
         "mode": "PUT",
         "error": "Error message"
       },
+      // Error is here
       "status": 500
     }
   },
 
+  // This will just return a string as a response
   "/api/v1/test2": {
     "GET": {
       "response": "String response"
     }
   },
 
+  // This is a wildcard match
   "/api/*/hello": {
     "GET": {
       "response": {
@@ -37,6 +45,7 @@
     }
   },
 
+  // More complex wild card
   "/api/co*ex/*lo/*": {
     "GET": {
       "response": {
@@ -45,12 +54,20 @@
     }
   },
 
+  // These are users
   "/api/v1/users": {
     "GET": {
       "response": [
         { "user": "serkan", "id": 1 },
         { "user": "renan", "id": 2 }
       ]
+    }
+  },
+
+  // This should return the response from the first value of users
+  "/api/v1/user/1": {
+    "GET": {
+      "response": "@self['/api/v1/users'].GET.response[0]"
     }
   }
 }

@@ -13,7 +13,8 @@
   "private": true,
   "dependencies": {
     "colors": "^1.1.2",
-    "pjson": "^1.0.4"
+    "pjson": "^1.0.x",
+    "jsonplus": "^1.2.x"
   },
   "devDependencies": {
     "jasmine-node": "^1.14.5",

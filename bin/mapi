@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-var Mapi = require('../dist/mapi.js')
+var Mapi = require('../dist/mapi.js').Mapi;
 
 // Run mapi
 new Mapi(process.argv.slice(2));

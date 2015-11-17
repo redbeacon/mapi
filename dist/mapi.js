@@ -11,27 +11,23 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-///<reference path='definitions/node.d.ts'/>
-///<reference path='definitions/colors.d.ts'/>
-///<reference path='definitions/mapi.d.ts'/>
-///<reference path='definitions/pjson.d.ts'/>
-require("colors");
 var http = require("http");
 var fs = require("fs");
 var pjson = require("pjson");
+var jsonplus_1 = require("jsonplus");
+require("colors");
+
 var Mapi = (function () {
     function Mapi(args) {
-        var dbFile = args[0];
-        var port = args[1] ? Number(args[1]) : 9000;
-        var hostname = args[2] || 'localhost';
+        var dbFile = args[0], port = args[1] ? Number(args[1]) : 9000, hostname = args[2] || "localhost";
         if (dbFile) {
-            this.map = JSON.parse(this.readFile(args[0]));
+            this.map = jsonplus_1.parse(this.readFile(args[0]));
         }
         else {
-            this.usage('Please provide a DB');
+            this.usage("Please provide a DB");
             return this.exit(1);
         }
-        console.log('%s %s', 'Mock server started'.green, ("http://" + hostname + ":" + port + "/_mapi/").magenta.underline);
+        console.log("%s %s", "Mock server started".green, ("http://" + hostname + ":" + port + "/_mapi/").magenta.underline);
         this.createServer(port, hostname);
     }
     Mapi.prototype.exit = function (status) {
@@ -41,7 +37,7 @@ var Mapi = (function () {
         http.createServer(this.server.bind(this)).listen(port, hostname);
     };
     Mapi.prototype.usage = function (errorMessage) {
-        if (errorMessage === void 0) { errorMessage = ''; }
+        if (errorMessage === void 0) { errorMessage = ""; }
         console.log(errorMessage.red);
         console.log("Usage:".green.underline);
         console.log("  mapi db.json".yellow, " # Just point a file as database".grey);
@@ -53,7 +49,7 @@ var Mapi = (function () {
     Mapi.prototype.readFile = function (fileName) {
         var file;
         try {
-            file = fs.readFileSync(fileName, { encoding: 'utf-8' });
+            file = fs.readFileSync(fileName, { encoding: "utf-8" });
         }
         catch (e) {
             this.usage("Could not read " + fileName);
@@ -64,8 +60,8 @@ var Mapi = (function () {
     Mapi.prototype.sendResponse = function (ServerResponse, content, status) {
         if (status === void 0) { status = 200; }
         ServerResponse.writeHead(status, {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*"
         });
         ServerResponse.end(content);
         return ServerResponse;
@@ -76,35 +72,35 @@ var Mapi = (function () {
             stats = fs.lstatSync(filename);
         }
         catch (e) {
-            ServerResponse.writeHead(404, { 'Content-Type': 'text/plain' });
-            ServerResponse.write('404 Not Found\n');
+            ServerResponse.writeHead(404, { "Content-Type": "text/plain" });
+            ServerResponse.write("404 Not Found\n");
             ServerResponse.end();
             return ServerResponse;
         }
         if (stats.isFile()) {
-            ServerResponse.writeHead(200, { 'Content-Type': mimeType });
+            ServerResponse.writeHead(200, { "Content-Type": mimeType });
             fileStream = fs.createReadStream(filename);
             fileStream.pipe(ServerResponse);
         }
         return ServerResponse;
     };
     Mapi.prototype.log = function (status, url, message) {
-        if (message === void 0) { message = ''; }
-        console.log('- %s %s, %s', ("[ " + status + " ]")[status === 200 ? 'green' : 'red'], url.yellow, message.grey);
+        if (message === void 0) { message = ""; }
+        console.log("- %s %s, %s", ("[ " + status + " ]")[status === 200 ? "green" : "red"], url.yellow, message.grey);
         return message;
     };
     Mapi.prototype.searchMap = function (url, method) {
-        if (method === void 0) { method = 'GET'; }
-        var entry, rgx, found = false, sanitized, urls;
+        if (method === void 0) { method = "GET"; }
+        var entry, found = false, urls;
         if (!this.map[url]) {
-            url = url.replace(/\/$/, '');
+            url = url.replace(/\/$/, "");
             if (!this.map[url]) {
                 urls = Object.keys(this.map);
                 urls.forEach(function (endpoint) {
-                    if (endpoint.indexOf('*') !== -1) {
-                        sanitized = endpoint.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
-                        rgx = new RegExp(sanitized.replace(/\\\*/g, '([^\\/]*?)'), 'gim');
-                        if (rgx.test(url) || rgx.test(url + '/')) {
+                    if (endpoint.indexOf("*") !== -1) {
+                        var sanitized = endpoint.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+                        var rgx = new RegExp(sanitized.replace(/\\\*/g, "([^\\/]*?)"), "gim");
+                        if (rgx.test(url) || rgx.test(url + "/")) {
                             url = endpoint;
                             found = true;
                         }
@@ -125,25 +121,25 @@ var Mapi = (function () {
         };
     };
     Mapi.prototype.server = function (ServerRequest, ServerResponse) {
-        var response, status, logMessage, endpoint, reqUrl = (ServerRequest.url + '/').replace(/\/+/g, '/').replace('/mapi', '/api');
+        var response, status, logMessage, endpoint, reqUrl = (ServerRequest.url + "/").replace(/\/+/g, "/").replace("/mapi", "/api");
         endpoint = this.searchMap(reqUrl, ServerRequest.method);
         if (endpoint.notFound !== true) {
             response = JSON.stringify(endpoint.fixture);
             status = endpoint.status;
             logMessage = endpoint.url;
         }
-        else if (reqUrl === '/favicon.ico/') {
-            return this.serveStatic(ServerResponse, 'src/images/favicon.ico', 'image/x-icon');
+        else if (reqUrl === "/favicon.ico/") {
+            return this.serveStatic(ServerResponse, "src/images/favicon.ico", "image/x-icon");
         }
-        else if (reqUrl === '/_mapi/') {
+        else if (reqUrl === "/_mapi/") {
             response = JSON.stringify(Object.keys(this.map));
             status = 200;
-            logMessage = 'show all urls';
+            logMessage = "show all urls";
         }
         else {
             response = "{ \"error\": \"Could not find " + reqUrl + "\" }";
             status = 404;
-            logMessage = 'url not mapped';
+            logMessage = "url not mapped";
         }
         this.log(status, reqUrl, logMessage);
         this.sendResponse(ServerResponse, response, status);

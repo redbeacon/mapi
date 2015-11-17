@@ -5,6 +5,11 @@ declare module mapi {
   }
 
   interface EndpointDetails {
+    GET: mapi.EndpointResponse;
+    POST: mapi.EndpointResponse;
+    PUT: mapi.EndpointResponse;
+    DELETE: mapi.EndpointResponse;
+    OPTIONS: mapi.EndpointResponse;
     [method: string]: mapi.EndpointResponse;
   }
 
