@@ -1,6 +1,3 @@
-///<reference path='definitions/node.d.ts'/>
-///<reference path='definitions/colors.d.ts'/>
-///<reference path='definitions/jasmine.d.ts'/>
 import 'colors';
 import {Mapi} from './mapi';
 
