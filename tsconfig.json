@@ -1,7 +1,6 @@
 {
     "compilerOptions": {
         "module": "commonjs",
-        "watch": true,
         "removeComments": true,
         "outDir": "dist",
         "experimentalDecorators": true

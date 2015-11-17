@@ -16,7 +16,6 @@ var fs = require("fs");
 var pjson = require("pjson");
 var jsonplus_1 = require("jsonplus");
 require("colors");
-
 var Mapi = (function () {
     function Mapi(args) {
         var dbFile = args[0], port = args[1] ? Number(args[1]) : 9000, hostname = args[2] || "localhost";
