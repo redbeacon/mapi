@@ -69,7 +69,7 @@ describe('Test Mapi', () => {
 
     it('should read the given file', () => {
       var result = Mapi.prototype.readFile('./example_fixtures.json');
-      // suffician enought JSON content
+      // sufficient enough JSON content
       expect(result).toContain('": "');
       expect(result).toContain('{');
       expect(result).toContain('}');
@@ -80,7 +80,7 @@ describe('Test Mapi', () => {
 
     it('should throw warning when file is not found', () => {
       Mapi.prototype.readFile('./notfound.json');
-      // suffician enought JSON content
+      // sufficient enough JSON content
       expect(Mapi.prototype.usage).toHaveBeenCalledWith('Could not read ./notfound.json');
       expect(Mapi.prototype.exit).toHaveBeenCalledWith(1);
     })
