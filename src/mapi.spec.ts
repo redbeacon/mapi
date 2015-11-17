@@ -39,7 +39,7 @@ describe('Test Mapi', () => {
       expect(mapi.readFile).toHaveBeenCalledWith('testfile.json');
       expect(mapi.createServer).toHaveBeenCalledWith(9000, 'localhost');
       expect(console.log).toHaveBeenCalledWith('%s %s', 'Mock server started'.green,
-                                                        'http://localhost:9000/_mapi/'.magenta.underline);
+        'http://localhost:9000/_mapi/'.magenta.underline);
     })
 
     it('should init with given values', () => {
@@ -47,7 +47,7 @@ describe('Test Mapi', () => {
       expect(mapi.readFile).toHaveBeenCalledWith('testfile.json');
       expect(mapi.createServer).toHaveBeenCalledWith(8080, '0.0.0.0');
       expect(console.log).toHaveBeenCalledWith('%s %s', 'Mock server started'.green,
-                                                        'http://0.0.0.0:8080/_mapi/'.magenta.underline);
+        'http://0.0.0.0:8080/_mapi/'.magenta.underline);
     })
 
     it('should init if only port is given', () => {
@@ -55,7 +55,7 @@ describe('Test Mapi', () => {
       expect(mapi.readFile).toHaveBeenCalledWith('testfile.json');
       expect(mapi.createServer).toHaveBeenCalledWith(8080, 'localhost');
       expect(console.log).toHaveBeenCalledWith('%s %s', 'Mock server started'.green,
-                                                        'http://localhost:8080/_mapi/'.magenta.underline);
+        'http://localhost:8080/_mapi/'.magenta.underline);
     })
   })
 
@@ -117,18 +117,18 @@ describe('Test Mapi', () => {
     })
   })
 
-  describe('log method', ()=>{
+  describe('log method', () => {
     beforeEach(() => {
       console.log = jasmine.createSpy('console.log');
     })
 
-    it('should log given message full arguments', ()=>{
+    it('should log given message full arguments', () => {
       var message = Mapi.prototype.log(200, '/abc', 'success');
       expect(console.log).toHaveBeenCalledWith('- %s %s, %s', '[ 200 ]'.green, '/abc'.yellow, 'success'.grey);
       expect(message).toBe('success');
     })
 
-    it('should print without message as well', ()=>{
+    it('should print without message as well', () => {
       var message = Mapi.prototype.log(200, '/abc');
       expect(console.log).toHaveBeenCalledWith('- %s %s, %s', '[ 200 ]'.green, '/abc'.yellow, ''.grey);
       expect(message).toBe('');
@@ -144,7 +144,7 @@ describe('Test Mapi', () => {
     })
   })
 
-  describe('serveStatic method', ()=>{
+  describe('serveStatic method', () => {
     beforeEach(() => {
       // mock http.ServerResponse object
       // mock fs module somehow
