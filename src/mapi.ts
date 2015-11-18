@@ -16,11 +16,38 @@ import http = require("http");
 import fs = require("fs");
 import pjson = require("pjson");
 import {parse} from "jsonplus";
+
 // Colors updates the String object
 import "colors";
 
+
+interface EndpointResponse {
+    response: any;
+    status: number;
+}
+
+interface EndpointDetails {
+    GET: EndpointResponse;
+    POST: EndpointResponse;
+    PUT: EndpointResponse;
+    DELETE: EndpointResponse;
+    OPTIONS: EndpointResponse;
+    [method: string]: EndpointResponse;
+}
+
+interface EndpointMap {
+    [url: string]: EndpointDetails;
+}
+
+interface MapSearchResult {
+    url?: string;
+    fixture?: string;
+    status?: number;
+    notFound?: boolean;
+}
+
 export class Mapi {
-    map: mapi.EndpointMap;
+    map: EndpointMap;
 
     constructor(args: string[]) {
         // Get args
@@ -137,8 +164,8 @@ export class Mapi {
     /**
      * Searches request URL in the endpoint map with given method. Returns information found.
      */
-    searchMap(url: string, method: string = "GET"): mapi.MapSearchResult {
-        let entry: mapi.EndpointDetails,
+    searchMap(url: string, method: string = "GET"): MapSearchResult {
+        let entry: EndpointDetails,
             found = false,
             urls: string[];
 
@@ -200,10 +227,10 @@ export class Mapi {
         let response: string,
             status: number,
             logMessage: string,
-            endpoint: mapi.MapSearchResult,
+            endpoint: MapSearchResult,
             // Add trailing slash no matter what
             // replace /mapi with /api so that you can define your endpoints as /api but still
-            // use them as /mapi. By this way you can have real api and mock api at the same time
+            // use them as / By this way you can have real api and mock api at the same time
             reqUrl = (ServerRequest.url + "/").replace(/\/+/g, "/").replace("/mapi", "/api");
 
         endpoint = this.searchMap(reqUrl, ServerRequest.method);
