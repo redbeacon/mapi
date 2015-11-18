@@ -1,5 +1,5 @@
 {
-  "name": "mockapi",
+  "name": "mochapi",
   "version": "1.0.0",
   "description": "Simple Api Mocking",
   "author": "The Home Depot - Techshed (http://techshed.co)",
@@ -10,7 +10,6 @@
   "scripts": {
     "test": "./tests.sh"
   },
-  "private": true,
   "dependencies": {
     "colors": "^1.1.2",
     "pjson": "^1.0.x",
