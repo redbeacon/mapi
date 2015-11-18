@@ -1,4 +1,4 @@
-# MAPI
+# MochAPI
 
 This is a simple mock api.
 
@@ -7,7 +7,7 @@ This is a simple mock api.
 Simply run
 
 ```
-npm install mapi -g
+npm install mochapi -g
 ```
 
 # Usage
@@ -68,5 +68,3 @@ tsc
 ```
 
 Typescript is configured to do everything automatically, you don't need to provide any arguments to the command.
-
-## [ TODO PULL REQUEST and TEST explanation ]
