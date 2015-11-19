@@ -1,6 +1,6 @@
 {
   "name": "mochapi",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Simple Api Mocking",
   "author": "The Home Depot - Techshed (http://techshed.co)",
   "main": "dist/mapi.js",
