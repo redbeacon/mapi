@@ -115,8 +115,8 @@ var Mapi = (function () {
         entry = this.map[url];
         return {
             url: url,
-            fixture: entry[method].response,
-            status: Number(entry[method].status || 200)
+            fixture: entry[method].response || entry.ALL.response,
+            status: Number(entry[method].status || entry.ALL.status || 200)
         };
     };
     Mapi.prototype.server = function (ServerRequest, ServerResponse) {
@@ -136,9 +136,16 @@ var Mapi = (function () {
             logMessage = "show all urls";
         }
         else {
-            response = "{ \"error\": \"Could not find " + reqUrl + "\" }";
-            status = 404;
-            logMessage = "url not mapped";
+            if (this.map.default404) {
+                response = this.map.default404.ALL.response;
+                status = this.map.default404.ALL.status;
+                logMessage = "default 404";
+            }
+            else {
+                response = "{ \"error\": \"Could not find " + reqUrl + "\" }";
+                status = 404;
+                logMessage = "url not mapped";
+            }
         }
         this.log(status, reqUrl, logMessage);
         this.sendResponse(ServerResponse, response, status);
