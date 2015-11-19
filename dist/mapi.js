@@ -89,50 +89,61 @@ var Mapi = (function () {
         console.log("- %s %s, %s", ("[ " + status + " ]")[status === 200 ? "green" : "red"], url.yellow, message.grey);
         return message;
     };
-    Mapi.prototype.searchMap = function (url, method) {
-        if (method === void 0) { method = "GET"; }
-        var entry, found = false, response, result, urls;
-        if (!this.map[url]) {
-            url = url.replace(/\/$/, "");
-            if (!this.map[url]) {
-                urls = Object.keys(this.map);
-                urls.forEach(function (endpoint) {
-                    if (endpoint.indexOf("*") !== -1) {
-                        var sanitized = endpoint.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
-                        var rgx = new RegExp(sanitized.replace(/\\\*/g, "([^\\/]*?)"), "gim");
-                        if (rgx.test(url) || rgx.test(url + "/")) {
-                            url = endpoint;
-                            found = true;
-                        }
-                    }
-                });
-                if (found === false) {
-                    result = {
-                        notFound: true
-                    };
+    Mapi.prototype.searchMapRegExp = function (url) {
+        var _this = this;
+        var urls = Object.keys(this.map);
+        var entry;
+        urls.forEach(function (endpoint) {
+            if (endpoint.indexOf("*") !== -1) {
+                var sanitized = endpoint.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+                var rgx = new RegExp(sanitized.replace(/\\\*/g, "([^\\/]*?)"), "gim");
+                if (rgx.test(url.noTrailing) || rgx.test(url.trailing)) {
+                    entry = _this.map[endpoint];
                 }
             }
-        }
-        entry = this.map[url];
-        result = { url: url };
-        if (entry[method]) {
-            result.fixture = entry[method].response;
-            result.status = entry[method].status || 200;
-        }
-        else if (entry.ALL) {
-            result.fixture = entry.ALL.response;
-            result.status = entry.ALL.status || 200;
+        });
+        return entry;
+    };
+    Mapi.prototype.searchMap = function (url, method) {
+        if (method === void 0) { method = "GET"; }
+        var entry, result = {};
+        entry = this.map[url.noTrailing] || this.map[url.trailing] || this.searchMapRegExp(url);
+        if (entry === undefined) {
+            result.notFound = true;
         }
         else {
-            result.notFound = true;
+            result = { url: url.original };
+            if (entry[method]) {
+                result.fixture = entry[method].response;
+                result.status = entry[method].status || 200;
+            }
+            else if (entry.ALL) {
+                result.fixture = entry.ALL.response;
+                result.status = entry.ALL.status || 200;
+            }
+            else {
+                result.notFound = true;
+            }
         }
         return result;
     };
     Mapi.prototype.normalizeUrl = function (url) {
-        var normalized;
-        normalized = url.replace(/\/+/g, "/").replace("/mapi", "/api");
-        var parsed = URL.parse(normalized);
-        return normalized;
+        var cleaned;
+        var result = { original: url };
+        var parsed;
+        cleaned = url.replace(/\/+/g, "/").replace("/mapi", "/api");
+        parsed = URL.parse(cleaned);
+        if (/\/$/.test(parsed.pathname)) {
+            result.trailing = URL.format(parsed);
+            parsed.pathname = parsed.pathname.replace(/\/$/, "");
+            result.noTrailing = URL.format(parsed);
+        }
+        else {
+            result.noTrailing = URL.format(parsed);
+            parsed.pathname = parsed.pathname + "/";
+            result.trailing = URL.format(parsed);
+        }
+        return result;
     };
     Mapi.prototype.server = function (ServerRequest, ServerResponse) {
         var response, status, logMessage, endpoint, reqUrl = this.normalizeUrl(ServerRequest.url);
@@ -142,10 +153,10 @@ var Mapi = (function () {
             status = endpoint.status;
             logMessage = endpoint.url;
         }
-        else if (reqUrl === "/favicon.ico/") {
+        else if (reqUrl.noTrailing === "/favicon.ico") {
             return this.serveStatic(ServerResponse, "src/images/favicon.ico", "image/x-icon");
         }
-        else if (reqUrl === "/_mapi/") {
+        else if (reqUrl.noTrailing === "/_mapi") {
             response = JSON.stringify(Object.keys(this.map));
             status = 200;
             logMessage = "show all urls";
@@ -157,12 +168,12 @@ var Mapi = (function () {
                 logMessage = "default 404";
             }
             else {
-                response = "{ \"error\": \"Could not find " + reqUrl + "\" }";
+                response = "{ \"error\": \"Could not find " + reqUrl.original + "\" }";
                 status = 404;
                 logMessage = "url not mapped";
             }
         }
-        this.log(status, reqUrl, logMessage);
+        this.log(status, reqUrl.original, logMessage);
         this.sendResponse(ServerResponse, response, status);
     };
     return Mapi;

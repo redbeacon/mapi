@@ -49,6 +49,12 @@ interface MapSearchResult {
     notFound?: boolean;
 }
 
+interface NormalizedURL {
+    original?: string;
+    trailing?: string;
+    noTrailing?: string;
+}
+
 export class Mapi {
     map: EndpointMap;
 
@@ -164,84 +170,89 @@ export class Mapi {
         return message;
     }
 
+    searchMapRegExp(url: NormalizedURL): EndpointDetails {
+        // Get all the keys to look for wildcards
+        // TODO: Find all these keys during initialization and cache the results
+        let urls = Object.keys(this.map);
+        let entry: EndpointDetails;
+
+        // Going through all endpoints, create a regexp from wildcards and
+        // try to match them to URL provided.
+        urls.forEach(endpoint => {
+            // We have only one wild card
+            if (endpoint.indexOf("*") !== -1) {
+
+                // First sanitize all possible REGEXP signs
+                let sanitized = endpoint.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
+
+                // Then find sanitized * and replace it with URL ready wildcard
+                let rgx = new RegExp(sanitized.replace(/\\\*/g, "([^\\/]*?)"), "gim");
+
+                // Try url with regexp, make sure to test
+                // with trailing slash as well.
+                if (rgx.test(url.noTrailing) || rgx.test(url.trailing)) {
+                    entry = this.map[endpoint];
+                }
+            }
+        });
+
+        return entry;
+    }
+
     /**
      * Searches request URL in the endpoint map with given method. Returns information found.
      */
-    searchMap(url: string, method: string = "GET"): MapSearchResult {
+    searchMap(url: NormalizedURL, method: string = "GET"): MapSearchResult {
         let entry: EndpointDetails,
-            found = false,
-            response: EndpointResponse,
-            result: MapSearchResult,
-            urls: string[];
+            result: MapSearchResult = {};
+
+        entry = this.map[url.noTrailing] || this.map[url.trailing] || this.searchMapRegExp(url);
 
         // If url is not in the map
-        if (!this.map[url]) {
-            // then remove the slash
-            url = url.replace(/\/$/, "");
-
-            // If there was no direct hit, look for wildcards
-            if (!this.map[url]) {
-                // Get all the keys to look for wildcards
-                // TODO: Find all these keys during initialization and cache the results
-                urls = Object.keys(this.map);
-
-                // Going through all endpoints, create a regexp from wildcards and
-                // try to match them to URL provided.
-                urls.forEach(endpoint => {
-                    // We have only one wild card
-                    if (endpoint.indexOf("*") !== -1) {
-
-                        // First sanitize all possible REGEXP signs
-                        let sanitized = endpoint.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
-
-                        // Then find sanitized * and replace it with URL ready wildcard
-                        let rgx = new RegExp(sanitized.replace(/\\\*/g, "([^\\/]*?)"), "gim");
-
-                        // Try url with regexp, make sure to test
-                        // with trailing slash as well.
-                        if (rgx.test(url) || rgx.test(url + "/")) {
-                            url = endpoint;
-                            found = true;
-                        }
-                    }
-                });
-
-                // Even regexp search did not find anything
-                if (found === false) {
-                    result = {
-                        notFound: true
-                    };
-                }
-            }
-        }
-
-        // Matching url found. Return it in specified format
-        entry = this.map[url];
-        result = { url: url };
-
-        // Make sure data exists
-        if (entry[method]) {
-            result.fixture = entry[method].response;
-            result.status = entry[method].status || 200;
-        } else if (entry.ALL) {
-            result.fixture = entry.ALL.response;
-            result.status = entry.ALL.status || 200;
-        } else {
+        if (entry === undefined) {
             result.notFound = true;
+        } else {
+            result = { url: url.original };
+
+            // Make sure data exists
+            if (entry[method]) {
+                result.fixture = entry[method].response;
+                result.status = entry[method].status || 200;
+            } else if (entry.ALL) {
+                result.fixture = entry.ALL.response;
+                result.status = entry.ALL.status || 200;
+            } else {
+                result.notFound = true;
+            }
         }
 
         // Return the found response
         return result;
     }
 
-    normalizeUrl(url: string): string {
-        let normalized:string;
-        normalized = url.replace(/\/+/g, "/").replace("/mapi", "/api");
+    /**
+     * Normalizes the url but creating trailing and non trailing slash
+     * versions of it. it also contains the original url
+     */
+    normalizeUrl(url: string): NormalizedURL {
+        let cleaned: string;
+        let result: NormalizedURL = { original: url };
+        let parsed: URL.Url;
 
-        let parsed = URL.parse(normalized);
-        //console.log(url, parsed);
+        cleaned = url.replace(/\/+/g, "/").replace("/mapi", "/api");
 
-        return normalized;
+        parsed = URL.parse(cleaned);
+
+        if (/\/$/.test(parsed.pathname)) {
+            result.trailing = URL.format(parsed);
+            parsed.pathname = parsed.pathname.replace(/\/$/, "");
+            result.noTrailing = URL.format(parsed);
+        } else {
+            result.noTrailing = URL.format(parsed);
+            parsed.pathname = parsed.pathname + "/";
+            result.trailing = URL.format(parsed);
+        }
+        return result;
     }
 
     /**
@@ -266,10 +277,10 @@ export class Mapi {
             status = endpoint.status;
             logMessage = endpoint.url;
 
-        } else if (reqUrl === "/favicon.ico/") {
+        } else if (reqUrl.noTrailing === "/favicon.ico") {
             // Serve this file statically
             return this.serveStatic(ServerResponse, "src/images/favicon.ico", "image/x-icon");
-        } else if (reqUrl === "/_mapi/") {
+        } else if (reqUrl.noTrailing === "/_mapi") {
             // for this url, display all mocked API Endpoints
             response = JSON.stringify(Object.keys(this.map));
             status = 200;
@@ -281,13 +292,13 @@ export class Mapi {
                 logMessage = "default 404";
             } else {
                 // If URL was not found display 404 message
-                response = `{ "error": "Could not find ${reqUrl}" }`;
+                response = `{ "error": "Could not find ${ reqUrl.original }" }`;
                 status = 404;
                 logMessage = "url not mapped";
             }
         }
 
-        this.log(status, reqUrl, logMessage);
+        this.log(status, reqUrl.original, logMessage);
         this.sendResponse(ServerResponse, response, status);
     }
 }
