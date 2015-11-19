@@ -14,6 +14,7 @@
 
 import http = require("http");
 import fs = require("fs");
+import URL = require("url");
 import pjson = require("pjson");
 import {parse} from "jsonplus";
 
@@ -169,6 +170,8 @@ export class Mapi {
     searchMap(url: string, method: string = "GET"): MapSearchResult {
         let entry: EndpointDetails,
             found = false,
+            response: EndpointResponse,
+            result: MapSearchResult,
             urls: string[];
 
         // If url is not in the map
@@ -205,7 +208,7 @@ export class Mapi {
 
                 // Even regexp search did not find anything
                 if (found === false) {
-                    return {
+                    result = {
                         notFound: true
                     };
                 }
@@ -214,12 +217,31 @@ export class Mapi {
 
         // Matching url found. Return it in specified format
         entry = this.map[url];
+        result = { url: url };
 
-        return {
-            url: url,
-            fixture: entry[method].response || entry.ALL.response,
-            status: Number(entry[method].status || entry.ALL.status || 200)
-        };
+        // Make sure data exists
+        if (entry[method]) {
+            result.fixture = entry[method].response;
+            result.status = entry[method].status || 200;
+        } else if (entry.ALL) {
+            result.fixture = entry.ALL.response;
+            result.status = entry.ALL.status || 200;
+        } else {
+            result.notFound = true;
+        }
+
+        // Return the found response
+        return result;
+    }
+
+    normalizeUrl(url: string): string {
+        let normalized:string;
+        normalized = url.replace(/\/+/g, "/").replace("/mapi", "/api");
+
+        let parsed = URL.parse(normalized);
+        //console.log(url, parsed);
+
+        return normalized;
     }
 
     /**
@@ -233,7 +255,7 @@ export class Mapi {
             // Add trailing slash no matter what
             // replace /mapi with /api so that you can define your endpoints as /api but still
             // use them as / By this way you can have real api and mock api at the same time
-            reqUrl = (ServerRequest.url + "/").replace(/\/+/g, "/").replace("/mapi", "/api");
+            reqUrl = this.normalizeUrl(ServerRequest.url);
 
         endpoint = this.searchMap(reqUrl, ServerRequest.method);
 

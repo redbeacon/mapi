@@ -13,6 +13,7 @@
 // limitations under the License.
 var http = require("http");
 var fs = require("fs");
+var URL = require("url");
 var pjson = require("pjson");
 var jsonplus_1 = require("jsonplus");
 require("colors");
@@ -90,7 +91,7 @@ var Mapi = (function () {
     };
     Mapi.prototype.searchMap = function (url, method) {
         if (method === void 0) { method = "GET"; }
-        var entry, found = false, urls;
+        var entry, found = false, response, result, urls;
         if (!this.map[url]) {
             url = url.replace(/\/$/, "");
             if (!this.map[url]) {
@@ -106,21 +107,35 @@ var Mapi = (function () {
                     }
                 });
                 if (found === false) {
-                    return {
+                    result = {
                         notFound: true
                     };
                 }
             }
         }
         entry = this.map[url];
-        return {
-            url: url,
-            fixture: entry[method].response || entry.ALL.response,
-            status: Number(entry[method].status || entry.ALL.status || 200)
-        };
+        result = { url: url };
+        if (entry[method]) {
+            result.fixture = entry[method].response;
+            result.status = entry[method].status || 200;
+        }
+        else if (entry.ALL) {
+            result.fixture = entry.ALL.response;
+            result.status = entry.ALL.status || 200;
+        }
+        else {
+            result.notFound = true;
+        }
+        return result;
+    };
+    Mapi.prototype.normalizeUrl = function (url) {
+        var normalized;
+        normalized = url.replace(/\/+/g, "/").replace("/mapi", "/api");
+        var parsed = URL.parse(normalized);
+        return normalized;
     };
     Mapi.prototype.server = function (ServerRequest, ServerResponse) {
-        var response, status, logMessage, endpoint, reqUrl = (ServerRequest.url + "/").replace(/\/+/g, "/").replace("/mapi", "/api");
+        var response, status, logMessage, endpoint, reqUrl = this.normalizeUrl(ServerRequest.url);
         endpoint = this.searchMap(reqUrl, ServerRequest.method);
         if (endpoint.notFound !== true) {
             response = JSON.stringify(endpoint.fixture);
