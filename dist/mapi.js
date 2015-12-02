@@ -1,16 +1,3 @@
-// Copyright 2015 The Home Depot
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
 var http = require("http");
 var fs = require("fs");
 var URL = require("url");
@@ -89,12 +76,23 @@ var Mapi = (function () {
         console.log("- %s %s, %s", ("[ " + status + " ]")[status === 200 ? "green" : "red"], url.yellow, message.grey);
         return message;
     };
+    Mapi.prototype.endsWith = function (str, value) {
+        return str.slice(-String(value).length) == value;
+    };
     Mapi.prototype.searchMapRegExp = function (url) {
         var _this = this;
+        var rgxToken = "REGEX";
+        var isRgxUrl = this.endsWith(url.noTrailing, rgxToken);
         var urls = Object.keys(this.map);
         var entry;
         urls.forEach(function (endpoint) {
-            if (endpoint.indexOf("*") !== -1) {
+            if (isRgxUrl && _this.endsWith(endpoint, rgxToken)) {
+                var rgx = new RegExp(endpoint, "gim");
+                if (rgx.test(url.noTrailing) || rgx.test(url.trailing)) {
+                    entry = _this.map[endpoint];
+                }
+            }
+            else if (endpoint.indexOf("*") !== -1) {
                 var sanitized = endpoint.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
                 var rgx = new RegExp(sanitized.replace(/\\\*/g, "([^\\/]*?)"), "gim");
                 if (rgx.test(url.noTrailing) || rgx.test(url.trailing)) {
