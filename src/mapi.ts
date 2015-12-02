@@ -170,7 +170,15 @@ export class Mapi {
         return message;
     }
 
+    endsWith(str: String, value: String) {
+      return str.slice(-String(value).length) == value;
+    }
+
     searchMapRegExp(url: NormalizedURL): EndpointDetails {
+        // Determines whether url should be treated as a regular expression
+        let rgxToken = "REGEX"
+        let isRgxUrl = this.endsWith(url.noTrailing, rgxToken);
+
         // Get all the keys to look for wildcards
         // TODO: Find all these keys during initialization and cache the results
         let urls = Object.keys(this.map);
@@ -179,8 +187,20 @@ export class Mapi {
         // Going through all endpoints, create a regexp from wildcards and
         // try to match them to URL provided.
         urls.forEach(endpoint => {
+
+            // Detect regular expression
+            if( isRgxUrl && this.endsWith(endpoint, rgxToken) ) {
+
+              //Create a REGEXP from the current endpoint
+              let rgx = new RegExp(endpoint, "gim");
+
+              if(rgx.test(url.noTrailing) || rgx.test(url.trailing)) {
+                entry = this.map[endpoint];
+              }
+
+            }
             // We have only one wild card
-            if (endpoint.indexOf("*") !== -1) {
+            else if (endpoint.indexOf("*") !== -1) {
 
                 // First sanitize all possible REGEXP signs
                 let sanitized = endpoint.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
