@@ -175,10 +175,8 @@ export class Mapi {
     searchMapRegExp(url: NormalizedURL): EndpointDetails {
         // Determines whether url should be treated as a regular expression
         let rgxToken = ":",
-        //let isRgxUrl = this.endsWith(url.noTrailing, rgxToken);
-
-        // Get all the keys to look for wildcards
-        // TODO: Find all these keys during initialization and cache the results
+            // Get all the keys to look for wildcards
+            // TODO: Find all these keys during initialization and cache the results
             urls = Object.keys(this.map),
             entry: EndpointDetails;
 
@@ -187,17 +185,17 @@ export class Mapi {
         urls.forEach(endpoint => {
 
             // Detect regex
-            if( endpoint.indexOf(":") === 0 ) {
+            if (endpoint.indexOf(":") === 0) {
 
-              // Remove the rgxToken from the current endpoint
-              endpoint = endpoint.slice(1,endpoint.length);
+                // Remove the rgxToken from the current endpoint
+                let expression = endpoint.slice(1, endpoint.length).trim();
 
-              // Create a REGEXP from the current endpoint
-              let rgx = new RegExp(endpoint, "gim");
+                // Create a REGEXP from the current endpoint
+                let rgx = new RegExp(expression, "gim");
 
-              if(rgx.test(url.noTrailing) || rgx.test(url.trailing)) {
-                entry = this.map[rgxToken+endpoint];
-              }
+                if (rgx.test(url.noTrailing) || rgx.test(url.trailing)) {
+                    entry = this.map[endpoint];
+                }
 
             }
             // We have a wild card (not a regex)
@@ -256,9 +254,9 @@ export class Mapi {
      * versions of it. it also contains the original url
      */
     normalizeUrl(url: string): NormalizedURL {
-        let cleaned: string;
-        let result: NormalizedURL = { original: url };
-        let parsed: URL.Url;
+        let cleaned: string,
+            result: NormalizedURL = { original: url },
+            parsed: URL.Url;
 
         cleaned = url.replace(/\/+/g, "/").replace("/mapi", "/api");
 
@@ -280,10 +278,10 @@ export class Mapi {
      * Takes a normalized url and appends a given query string
      */
     appendQueryString(url: NormalizedURL, query: string) {
-      url.original += "\\?"+ query;
-      url.noTrailing += "?"+ query;
-      url.trailing += "?"+ query;
-      return url;
+        url.original += "\\?" + query;
+        url.noTrailing += "?" + query;
+        url.trailing += "?" + query;
+        return url;
     }
 
     /**
@@ -295,61 +293,61 @@ export class Mapi {
         // use them as / By this way you can have real api and mock api at the same time
         let reqUrl = this.normalizeUrl(ServerRequest.url);
 
-        if(ServerRequest.method === "POST") {
-          let post = new formidable.IncomingForm();
+        if (ServerRequest.method === "POST") {
+            let post = new formidable.IncomingForm();
 
-          post.parse(ServerRequest, function(err, params, files) {
-            var query = queryString.stringify(params);
-            if(query.length > 0) {
-              //Assumes the POST url is a regex, so we escape the ?
-              reqUrl = this.appendQueryString(reqUrl, query);
-            }
-            return this.serverHelper(reqUrl, ServerRequest, ServerResponse);
-          }.bind(this));
+            post.parse(ServerRequest, function(err, params, files) {
+                var query = queryString.stringify(params);
+                if (query.length > 0) {
+                    //Assumes the POST url is a regex, so we escape the ?
+                    reqUrl = this.appendQueryString(reqUrl, query);
+                }
+                return this.serverHelper(reqUrl, ServerRequest, ServerResponse);
+            }.bind(this));
         } else {
-          return this.serverHelper(reqUrl, ServerRequest, ServerResponse);
+            return this.serverHelper(reqUrl, ServerRequest, ServerResponse);
         }
     }
 
 
-    serverHelper(reqUrl: NormalizedURL , ServerRequest: http.ServerRequest, ServerResponse: http.ServerResponse): http.ServerResponse | void {
-      let response: string,
-          status: number,
-          logMessage: string,
-          endpoint: MapSearchResult
+    serverHelper(reqUrl: NormalizedURL, ServerRequest: http.ServerRequest, ServerResponse: http.ServerResponse): http.ServerResponse | void {
+        let response: string,
+            status: number,
+            logMessage: string,
+            endpoint: MapSearchResult
 
-      endpoint = this.searchMap(reqUrl, ServerRequest.method);
+        endpoint = this.searchMap(reqUrl, ServerRequest.method);
 
-      if (endpoint.notFound !== true) {
-          // if url found in the endpoint map, display the
-          // fixture data with status code
-          response = JSON.stringify(endpoint.fixture);
-          status = endpoint.status;
-          logMessage = endpoint.url;
+        if (endpoint.notFound !== true) {
+            // if url found in the endpoint map, display the
+            // fixture data with status code
+            response = JSON.stringify(endpoint.fixture);
+            status = endpoint.status;
+            logMessage = endpoint.url;
 
-      } else if (reqUrl.noTrailing === "/favicon.ico") {
-          // Serve this file statically
-          return this.serveStatic(ServerResponse, "src/images/favicon.ico", "image/x-icon");
-      } else if (reqUrl.noTrailing === "/_mapi") {
-          // for this url, display all mocked API Endpoints
-          response = JSON.stringify(Object.keys(this.map));
-          status = 200;
-          logMessage = "show all urls";
-      } else {
-          if (this.map.default404) {
-              response = this.map.default404.ALL.response;
-              status = this.map.default404.ALL.status;
-              logMessage = "default 404";
-          } else {
-              // If URL was not found display 404 message
-              response = `{ "error": "Could not find ${ reqUrl.original }" }`;
-              status = 404;
-              logMessage = "url not mapped";
-          }
-      }
+        } else if (reqUrl.noTrailing === "/favicon.ico") {
+            // Serve this file statically
+            return this.serveStatic(ServerResponse, "src/images/favicon.ico", "image/x-icon");
+        } else if (reqUrl.noTrailing === "/_mapi") {
+            // for this url, display all mocked API Endpoints
+            response = JSON.stringify(Object.keys(this.map));
+            status = 200;
+            logMessage = "show all urls";
+        } else {
+            if (this.map.default404) {
+                response = this.map.default404.ALL.response;
+                status = this.map.default404.ALL.status;
+                logMessage = "default 404";
+            } else {
+                // If URL was not found display 404 message
+                response = `{ "error": "Could not find ${ reqUrl.original }" }`;
+                status = 404;
+                logMessage = "url not mapped";
+            }
+        }
 
-      this.log(status, reqUrl.original, logMessage);
-      this.sendResponse(ServerResponse, response, status);
+        this.log(status, reqUrl.original, logMessage);
+        this.sendResponse(ServerResponse, response, status);
     }
 
 }
