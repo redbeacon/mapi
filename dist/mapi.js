@@ -14,6 +14,8 @@
 var http = require("http");
 var fs = require("fs");
 var URL = require("url");
+var queryString = require('query-string');
+var formidable = require("formidable");
 var pjson = require("pjson");
 var jsonplus_1 = require("jsonplus");
 // Colors updates the String object
@@ -199,14 +201,39 @@ var Mapi = (function () {
         return result;
     };
     /**
+     * Takes a normalized url and appends a given query string
+     */
+    Mapi.prototype.appendQueryString = function (url, query) {
+        url.original += "\\?" + query;
+        url.noTrailing += "?" + query;
+        url.trailing += "?" + query;
+        return url;
+    };
+    /**
      * Handles the requests and sends response back accordingly.
      */
     Mapi.prototype.server = function (ServerRequest, ServerResponse) {
-        var response, status, logMessage, endpoint, 
         // Add trailing slash no matter what
         // replace /mapi with /api so that you can define your endpoints as /api but still
         // use them as / By this way you can have real api and mock api at the same time
-        reqUrl = this.normalizeUrl(ServerRequest.url);
+        var reqUrl = this.normalizeUrl(ServerRequest.url);
+        if (ServerRequest.method === "POST") {
+            var post = new formidable.IncomingForm();
+            post.parse(ServerRequest, function (err, params, files) {
+                var query = queryString.stringify(params);
+                if (query.length > 0) {
+                    //Assumes the POST url is a regex, so we escape the ?
+                    reqUrl = this.appendQueryString(reqUrl, query);
+                }
+                return this.serverHelper(reqUrl, ServerRequest, ServerResponse);
+            }.bind(this));
+        }
+        else {
+            return this.serverHelper(reqUrl, ServerRequest, ServerResponse);
+        }
+    };
+    Mapi.prototype.serverHelper = function (reqUrl, ServerRequest, ServerResponse) {
+        var response, status, logMessage, endpoint;
         endpoint = this.searchMap(reqUrl, ServerRequest.method);
         if (endpoint.notFound !== true) {
             // if url found in the endpoint map, display the
