@@ -118,7 +118,6 @@ var Mapi = (function () {
         var _this = this;
         // Determines whether url should be treated as a regular expression
         var rgxToken = ":", 
-        //let isRgxUrl = this.endsWith(url.noTrailing, rgxToken);
         // Get all the keys to look for wildcards
         // TODO: Find all these keys during initialization and cache the results
         urls = Object.keys(this.map), entry;
@@ -128,11 +127,11 @@ var Mapi = (function () {
             // Detect regex
             if (endpoint.indexOf(":") === 0) {
                 // Remove the rgxToken from the current endpoint
-                endpoint = endpoint.slice(1, endpoint.length);
+                var expression = endpoint.slice(1, endpoint.length).trim();
                 // Create a REGEXP from the current endpoint
-                var rgx = new RegExp(endpoint, "gim");
+                var rgx = new RegExp(expression, "gim");
                 if (rgx.test(url.noTrailing) || rgx.test(url.trailing)) {
-                    entry = _this.map[rgxToken + endpoint];
+                    entry = _this.map[endpoint];
                 }
             }
             else if (endpoint.indexOf("*") !== -1) {
@@ -183,9 +182,7 @@ var Mapi = (function () {
      * versions of it. it also contains the original url
      */
     Mapi.prototype.normalizeUrl = function (url) {
-        var cleaned;
-        var result = { original: url };
-        var parsed;
+        var cleaned, result = { original: url }, parsed;
         cleaned = url.replace(/\/+/g, "/").replace("/mapi", "/api");
         parsed = URL.parse(cleaned);
         if (/\/$/.test(parsed.pathname)) {
