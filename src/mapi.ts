@@ -15,8 +15,8 @@
 import http = require("http");
 import fs = require("fs");
 import URL = require("url");
-var queryString = require('query-string');
-var formidable = require("formidable");
+import queryString = require("query-string");
+import formidable = require("formidable");
 import pjson = require("pjson");
 import {parse} from "jsonplus";
 
