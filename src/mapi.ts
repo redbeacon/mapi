@@ -15,6 +15,8 @@
 import http = require("http");
 import fs = require("fs");
 import URL = require("url");
+var queryString = require('query-string');
+var formidable = require("formidable");
 import pjson = require("pjson");
 import {parse} from "jsonplus";
 
@@ -275,49 +277,79 @@ export class Mapi {
     }
 
     /**
+     * Takes a normalized url and appends a given query string
+     */
+    appendQueryString(url: NormalizedURL, query: string) {
+      url.original += "\\?"+ query;
+      url.noTrailing += "?"+ query;
+      url.trailing += "?"+ query;
+      return url;
+    }
+
+    /**
      * Handles the requests and sends response back accordingly.
      */
     server(ServerRequest: http.ServerRequest, ServerResponse: http.ServerResponse): http.ServerResponse | void {
-        let response: string,
-            status: number,
-            logMessage: string,
-            endpoint: MapSearchResult,
-            // Add trailing slash no matter what
-            // replace /mapi with /api so that you can define your endpoints as /api but still
-            // use them as / By this way you can have real api and mock api at the same time
-            reqUrl = this.normalizeUrl(ServerRequest.url);
+        // Add trailing slash no matter what
+        // replace /mapi with /api so that you can define your endpoints as /api but still
+        // use them as / By this way you can have real api and mock api at the same time
+        let reqUrl = this.normalizeUrl(ServerRequest.url);
 
-        endpoint = this.searchMap(reqUrl, ServerRequest.method);
+        if(ServerRequest.method === "POST") {
+          let post = new formidable.IncomingForm();
 
-        if (endpoint.notFound !== true) {
-            // if url found in the endpoint map, display the
-            // fixture data with status code
-            response = JSON.stringify(endpoint.fixture);
-            status = endpoint.status;
-            logMessage = endpoint.url;
-
-        } else if (reqUrl.noTrailing === "/favicon.ico") {
-            // Serve this file statically
-            return this.serveStatic(ServerResponse, "src/images/favicon.ico", "image/x-icon");
-        } else if (reqUrl.noTrailing === "/_mapi") {
-            // for this url, display all mocked API Endpoints
-            response = JSON.stringify(Object.keys(this.map));
-            status = 200;
-            logMessage = "show all urls";
-        } else {
-            if (this.map.default404) {
-                response = this.map.default404.ALL.response;
-                status = this.map.default404.ALL.status;
-                logMessage = "default 404";
-            } else {
-                // If URL was not found display 404 message
-                response = `{ "error": "Could not find ${ reqUrl.original }" }`;
-                status = 404;
-                logMessage = "url not mapped";
+          post.parse(ServerRequest, function(err, params, files) {
+            var query = queryString.stringify(params);
+            if(query.length > 0) {
+              //Assumes the POST url is a regex, so we escape the ?
+              reqUrl = this.appendQueryString(reqUrl, query);
             }
+            return this.serverHelper(reqUrl, ServerRequest, ServerResponse);
+          }.bind(this));
+        } else {
+          return this.serverHelper(reqUrl, ServerRequest, ServerResponse);
         }
-
-        this.log(status, reqUrl.original, logMessage);
-        this.sendResponse(ServerResponse, response, status);
     }
+
+
+    serverHelper(reqUrl: NormalizedURL , ServerRequest: http.ServerRequest, ServerResponse: http.ServerResponse): http.ServerResponse | void {
+      let response: string,
+          status: number,
+          logMessage: string,
+          endpoint: MapSearchResult
+
+      endpoint = this.searchMap(reqUrl, ServerRequest.method);
+
+      if (endpoint.notFound !== true) {
+          // if url found in the endpoint map, display the
+          // fixture data with status code
+          response = JSON.stringify(endpoint.fixture);
+          status = endpoint.status;
+          logMessage = endpoint.url;
+
+      } else if (reqUrl.noTrailing === "/favicon.ico") {
+          // Serve this file statically
+          return this.serveStatic(ServerResponse, "src/images/favicon.ico", "image/x-icon");
+      } else if (reqUrl.noTrailing === "/_mapi") {
+          // for this url, display all mocked API Endpoints
+          response = JSON.stringify(Object.keys(this.map));
+          status = 200;
+          logMessage = "show all urls";
+      } else {
+          if (this.map.default404) {
+              response = this.map.default404.ALL.response;
+              status = this.map.default404.ALL.status;
+              logMessage = "default 404";
+          } else {
+              // If URL was not found display 404 message
+              response = `{ "error": "Could not find ${ reqUrl.original }" }`;
+              status = 404;
+              logMessage = "url not mapped";
+          }
+      }
+
+      this.log(status, reqUrl.original, logMessage);
+      this.sendResponse(ServerResponse, response, status);
+    }
+
 }
