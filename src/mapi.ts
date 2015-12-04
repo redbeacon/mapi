@@ -284,39 +284,39 @@ export class Mapi {
         return url;
     }
 
-    /**
-     * Handles the requests and sends response back accordingly.
-     */
-    server(ServerRequest: http.ServerRequest, ServerResponse: http.ServerResponse): http.ServerResponse | void {
-        // Add trailing slash no matter what
-        // replace /mapi with /api so that you can define your endpoints as /api but still
-        // use them as / By this way you can have real api and mock api at the same time
-        let reqUrl = this.normalizeUrl(ServerRequest.url);
+    getEndpoint(ServerRequest: http.ServerRequest, callback: Function): void {
+      let reqUrl = this.normalizeUrl(ServerRequest.url);
 
-        if (ServerRequest.method === "POST") {
-            let post = new formidable.IncomingForm();
+      if(ServerRequest.method === "POST") {
+        let post = new formidable.IncomingForm();
 
-            post.parse(ServerRequest, function(err, params, files) {
-                var query = queryString.stringify(params);
-                if (query.length > 0) {
-                    //Assumes the POST url is a regex, so we escape the ?
-                    reqUrl = this.appendQueryString(reqUrl, query);
-                }
-                return this.serverHelper(reqUrl, ServerRequest, ServerResponse);
-            }.bind(this));
-        } else {
-            return this.serverHelper(reqUrl, ServerRequest, ServerResponse);
-        }
+        post.parse(ServerRequest, function(err, params, files) {
+          var query = queryString.stringify(params);
+          if(query.length > 0) {
+            //Assumes the POST url is a regex, so we escape the ?
+            reqUrl = this.appendQueryString(reqUrl, query);
+          }
+          callback(this.searchMap(reqUrl, ServerRequest.method));
+        }.bind(this));
+      } else {
+        callback(this.searchMap(reqUrl, ServerRequest.method));
+      }
+
     }
 
 
-    serverHelper(reqUrl: NormalizedURL, ServerRequest: http.ServerRequest, ServerResponse: http.ServerResponse): http.ServerResponse | void {
-        let response: string,
-            status: number,
-            logMessage: string,
-            endpoint: MapSearchResult
+    /**
+     * Handles the requests and sends response back accordingly.
+     */
+    server(ServerRequest: http.ServerRequest, ServerResponse: http.ServerResponse): void {
 
-        endpoint = this.searchMap(reqUrl, ServerRequest.method);
+      let response: string,
+          status: number,
+          logMessage: string,
+          endpoint: MapSearchResult,
+          reqUrl = this.normalizeUrl(ServerRequest.url);
+
+      this.getEndpoint(ServerRequest, function(endpoint: MapSearchResult) {
 
         if (endpoint.notFound !== true) {
             // if url found in the endpoint map, display the
@@ -348,6 +348,9 @@ export class Mapi {
 
         this.log(status, reqUrl.original, logMessage);
         this.sendResponse(ServerResponse, response, status);
+
+      }.bind(this));
+
     }
 
 }
