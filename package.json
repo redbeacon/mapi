@@ -1,6 +1,6 @@
 {
   "name": "mochapi",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Simple Api Mocking",
   "author": "The Home Depot - Techshed (http://techshed.co)",
   "main": "dist/mapi.js",
@@ -13,7 +13,9 @@
   "dependencies": {
     "colors": "^1.1.2",
     "jsonplus": "^1.2.1",
-    "pjson": "^1.0.x"
+    "pjson": "^1.0.x",
+    "formidable": "^1.0.17",
+    "query-string": "^3.0.0"
   },
   "devDependencies": {
     "jasmine-node": "^1.14.5",

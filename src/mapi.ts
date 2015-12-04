@@ -15,6 +15,8 @@
 import http = require("http");
 import fs = require("fs");
 import URL = require("url");
+import queryString = require("query-string");
+import formidable = require("formidable");
 import pjson = require("pjson");
 import {parse} from "jsonplus";
 
@@ -171,16 +173,33 @@ export class Mapi {
     }
 
     searchMapRegExp(url: NormalizedURL): EndpointDetails {
-        // Get all the keys to look for wildcards
-        // TODO: Find all these keys during initialization and cache the results
-        let urls = Object.keys(this.map);
-        let entry: EndpointDetails;
+        // Determines whether url should be treated as a regular expression
+        let rgxToken = ":",
+            // Get all the keys to look for wildcards
+            // TODO: Find all these keys during initialization and cache the results
+            urls = Object.keys(this.map),
+            entry: EndpointDetails;
 
         // Going through all endpoints, create a regexp from wildcards and
         // try to match them to URL provided.
         urls.forEach(endpoint => {
-            // We have only one wild card
-            if (endpoint.indexOf("*") !== -1) {
+
+            // Detect regex
+            if (endpoint.indexOf(":") === 0) {
+
+                // Remove the rgxToken from the current endpoint
+                let expression = endpoint.slice(1, endpoint.length).trim();
+
+                // Create a REGEXP from the current endpoint
+                let rgx = new RegExp(expression, "gim");
+
+                if (rgx.test(url.noTrailing) || rgx.test(url.trailing)) {
+                    entry = this.map[endpoint];
+                }
+
+            }
+            // We have a wild card (not a regex)
+            else if (endpoint.indexOf("*") !== -1) {
 
                 // First sanitize all possible REGEXP signs
                 let sanitized = endpoint.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&");
@@ -235,9 +254,9 @@ export class Mapi {
      * versions of it. it also contains the original url
      */
     normalizeUrl(url: string): NormalizedURL {
-        let cleaned: string;
-        let result: NormalizedURL = { original: url };
-        let parsed: URL.Url;
+        let cleaned: string,
+            result: NormalizedURL = { original: url },
+            parsed: URL.Url;
 
         cleaned = url.replace(/\/+/g, "/").replace("/mapi", "/api");
 
@@ -256,19 +275,48 @@ export class Mapi {
     }
 
     /**
+     * Takes a normalized url and appends a given query string
+     */
+    appendQueryString(url: NormalizedURL, query: string) {
+        url.original += "\\?" + query;
+        url.noTrailing += "?" + query;
+        url.trailing += "?" + query;
+        return url;
+    }
+
+    getEndpoint(ServerRequest: http.ServerRequest, callback: Function): void {
+      let reqUrl = this.normalizeUrl(ServerRequest.url);
+
+      if(ServerRequest.method === "POST") {
+        let post = new formidable.IncomingForm();
+
+        post.parse(ServerRequest, function(err, params, files) {
+          var query = queryString.stringify(params);
+          if(query.length > 0) {
+            //Assumes the POST url is a regex, so we escape the ?
+            reqUrl = this.appendQueryString(reqUrl, query);
+          }
+          callback(this.searchMap(reqUrl, ServerRequest.method));
+        }.bind(this));
+      } else {
+        callback(this.searchMap(reqUrl, ServerRequest.method));
+      }
+
+    }
+
+
+    /**
      * Handles the requests and sends response back accordingly.
      */
-    server(ServerRequest: http.ServerRequest, ServerResponse: http.ServerResponse): http.ServerResponse | void {
-        let response: string,
-            status: number,
-            logMessage: string,
-            endpoint: MapSearchResult,
-            // Add trailing slash no matter what
-            // replace /mapi with /api so that you can define your endpoints as /api but still
-            // use them as / By this way you can have real api and mock api at the same time
-            reqUrl = this.normalizeUrl(ServerRequest.url);
+    server(ServerRequest: http.ServerRequest, ServerResponse: http.ServerResponse): void {
 
-        endpoint = this.searchMap(reqUrl, ServerRequest.method);
+      let response: string,
+          status: number,
+          logMessage: string,
+          endpoint: MapSearchResult,
+          reqUrl = this.normalizeUrl(ServerRequest.url);
+
+      this.getEndpoint(ServerRequest, function(endpoint: MapSearchResult) {
 
         if (endpoint.notFound !== true) {
             // if url found in the endpoint map, display the
@@ -300,5 +348,9 @@ export class Mapi {
 
         this.log(status, reqUrl.original, logMessage);
         this.sendResponse(ServerResponse, response, status);
+
+      }.bind(this));
+
     }
+
 }
