@@ -3,3 +3,6 @@
 /// <reference path="jasmine/legacy/jasmine-1.3.d.ts" />
 /// <reference path="colors/colors.d.ts" />
 /// <reference path="node/node-0.10.d.ts" />
+/// <reference path="query-string/query-string.d.ts" />
+/// <reference path="formidable/formidable.d.ts" />
+/// <reference path="node/node.d.ts" />
